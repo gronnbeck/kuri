@@ -1,0 +1,12 @@
+<h1>Notes</h1>
+
+<% @notes.each do |note| %>
+  <article>
+    <% note["fields"].each do |field_name, field_data| %>
+      <p><strong><%= field_name %>:</strong> <%= field_data["value"] %></p>
+    <% end %>
+    <% if note["tags"].any? %>
+      <p><em>Tags: <%= note["tags"].join(", ") %></em></p>
+    <% end %>
+  </article>
+<% end %>
