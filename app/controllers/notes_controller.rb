@@ -11,4 +11,13 @@ class NotesController < ApplicationController
     flash.now[:alert] = "AnkiConnect unavailable: #{e.message}"
     @notes = []
   end
+
+  def show
+    client = AnkiConnect::Client.new
+    results = client.notes_info(ids: [ params[:id].to_i ])
+    @note = results.first
+  rescue AnkiConnect::Client::ConnectionError => e
+    flash.now[:alert] = "AnkiConnect unavailable: #{e.message}"
+    @note = nil
+  end
 end

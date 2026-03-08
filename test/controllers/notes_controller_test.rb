@@ -30,6 +30,30 @@ class NotesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".note-field", /Hello/
   end
 
+  test "show renders note detail with all fields and tags" do
+    note_data = [
+      { "noteId" => 42, "fields" => { "Front" => { "value" => "Hello" }, "Back" => { "value" => "World" } }, "tags" => [ "tag1", "tag2" ] }
+    ]
+
+    stub_anki_connect("notesInfo", { notes: [ 42 ] }, note_data)
+
+    get note_path(42)
+
+    assert_response :success
+    assert_select ".note-field", /Hello/
+    assert_select ".note-field", /World/
+    assert_select ".note-tags", /tag1/
+  end
+
+  test "show shows alert when AnkiConnect is unavailable" do
+    stub_request(:post, "http://localhost:8765").to_raise(Errno::ECONNREFUSED)
+
+    get note_path(42)
+
+    assert_response :success
+    assert_select "body", /AnkiConnect unavailable/
+  end
+
   private
 
   def stub_anki_connect(action, params, result)
