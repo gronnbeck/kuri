@@ -25,7 +25,9 @@ class NotesControllerTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "body", /Hello/
+    assert_select ".note-card", 1
+    assert_select ".note-card[href='/notes/1']"
+    assert_select ".note-field", /Hello/
   end
 
   private
