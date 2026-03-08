@@ -18,7 +18,7 @@ Future: a local cache model (e.g. `Note`) could mirror Anki data for offline use
 - A service object (e.g. `AnkiConnect::Client`) wraps HTTP calls to AnkiConnect.
 - The `NotesController#index` action calls the service and assigns results to the view.
 - The `NotesController#show` action fetches a single note by ID via `notesInfo` and renders the detail view.
-- Index view renders notes as card components (CSS card layout, each card links to `note_path(id)`).
+- Index view renders notes as card components (CSS card layout, each card links to `note_path(id)`); only the `Word` and `Definition` fields are displayed on the index card.
 - Use `Net::HTTP` or Faraday for HTTP; no external gem strictly required.
 
 ## Patterns & Decisions

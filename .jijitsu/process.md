@@ -29,7 +29,10 @@
 
 This is the steps we use when implementing a feature
 
-1. Write the test reflecting the spec (test on all levels)
+1. Write the test reflecting the spec
+ 1.1. Controller test
+ 1.2. Model test
+ 1.3. System test
 2. Write the code that makes the tests pass
 3. Run bin/ci to check that everything is in order
 4. Commit
