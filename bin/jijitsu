@@ -3,9 +3,11 @@
 
 require "yaml"
 require "fileutils"
+require "digest"
 
-ROOT = Dir.pwd
+ROOT        = Dir.pwd
 CONFIG_FILE = File.join(ROOT, ".jijitsu.yml")
+SUMS_FILE   = File.join(ROOT, ".jijitsu", "checksums.yml")
 
 abort "Error: .jijitsu.yml not found in #{ROOT}" unless File.exist?(CONFIG_FILE)
 
@@ -39,9 +41,33 @@ def ts
   Time.now.strftime("%H:%M:%S")
 end
 
-def spec_cycle(spec_file, docs_dir, system_prompt, config)
+def md5(path)
+  Digest::MD5.file(path).hexdigest
+end
+
+def load_sums(sums_file)
+  File.exist?(sums_file) ? YAML.load_file(sums_file) || {} : {}
+end
+
+def save_sum(sums_file, key, path)
+  sums = load_sums(sums_file)
+  sums[key] = md5(path)
+  File.write(sums_file, sums.to_yaml)
+end
+
+def changed?(sums_file, key, path)
+  return true unless File.exist?(path)
+  load_sums(sums_file)[key] != md5(path)
+end
+
+def spec_cycle(spec_file, docs_dir, system_prompt, config, sums_file)
   unless File.exist?(spec_file)
-    warn "[#{Time.now.strftime("%H:%M:%S")}] #{config["spec"]} not found — skipping spec cycle."
+    warn "[#{ts}] #{config["spec"]} not found — skipping spec cycle."
+    return
+  end
+
+  unless changed?(sums_file, "spec", spec_file)
+    puts "[#{ts}] Spec cycle — no changes, skipping."
     return
   end
 
@@ -63,13 +89,32 @@ def spec_cycle(spec_file, docs_dir, system_prompt, config)
   PROMPT
 
   run_claude(prompt)
+  save_sum(sums_file, "spec", spec_file)
+  git_commit_docs(spec_file, docs_dir)
 end
 
-def implement_cycle(docs_dir, implement_prompt, process_file)
+def git_commit_docs(spec_file, docs_dir)
+  staged = `git -C #{ROOT} add --dry-run #{spec_file} #{docs_dir} 2>/dev/null`.strip
+  return if staged.empty?
+
+  system("git", "-C", ROOT, "add", spec_file, docs_dir)
+  diff = `git -C #{ROOT} diff --cached --name-only`.strip
+  return if diff.empty?
+
+  puts "[#{ts}] Committing doc changes..."
+  system("git", "-C", ROOT, "commit", "-m", "jijitsu: update spec docs [auto]")
+end
+
+def implement_cycle(docs_dir, implement_prompt, process_file, sums_file)
   tasks_file = File.join(docs_dir, "tasks.md")
 
   unless File.exist?(tasks_file)
     puts "[#{ts}] Implement cycle — no tasks.md yet, skipping."
+    return
+  end
+
+  unless changed?(sums_file, "tasks", tasks_file)
+    puts "[#{ts}] Implement cycle — no changes, skipping."
     return
   end
 
@@ -91,6 +136,7 @@ def implement_cycle(docs_dir, implement_prompt, process_file)
   PROMPT
 
   run_claude(prompt)
+  save_sum(sums_file, "tasks", tasks_file)
 end
 
 if once
@@ -101,13 +147,13 @@ end
 puts
 
 if once
-  spec_cycle(spec_file, docs_dir, system_prompt, config)
-  implement_cycle(docs_dir, implement_prompt, process_file)
+  spec_cycle(spec_file, docs_dir, system_prompt, config, SUMS_FILE)
+  implement_cycle(docs_dir, implement_prompt, process_file, SUMS_FILE)
   puts "[#{ts}] Done."
 else
   loop do
-    spec_cycle(spec_file, docs_dir, system_prompt, config)
-    implement_cycle(docs_dir, implement_prompt, process_file)
+    spec_cycle(spec_file, docs_dir, system_prompt, config, SUMS_FILE)
+    implement_cycle(docs_dir, implement_prompt, process_file, SUMS_FILE)
     puts "[#{ts}] Done. Sleeping #{interval}s...\n\n"
     sleep interval
   rescue Interrupt
