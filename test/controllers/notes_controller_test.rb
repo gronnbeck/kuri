@@ -5,6 +5,15 @@ require "test_helper"
 class NotesControllerTest < ActionDispatch::IntegrationTest
   DECK = "Personal mining"
 
+  test "index shows alert and empty list when AnkiConnect is unavailable" do
+    stub_request(:post, "http://localhost:8765").to_raise(Errno::ECONNREFUSED)
+
+    get root_path
+
+    assert_response :success
+    assert_select "body", /AnkiConnect unavailable/
+  end
+
   test "index fetches notes from AnkiConnect and renders them" do
     note_data = [
       { "noteId" => 1, "fields" => { "Front" => { "value" => "Hello" }, "Back" => { "value" => "World" } }, "tags" => [ "tag1" ] }
