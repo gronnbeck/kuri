@@ -1,7 +1,6 @@
 # Tasks
 
 ## Next
-- [ ] Add `NotesController#show` action + route + view for note detail page (front/back/tags/all fields)
 - [ ] Limit index card display to Word and Definition fields only (strip other fields from index view)
 
 ## Backlog
@@ -12,6 +11,7 @@
 - [ ] Support multiple decks (not just "Personal mining")
 
 ## Done
+- [x] Add `NotesController#show` action + route + view for note detail page (front/back/tags/all fields) — added show action in notes_controller.rb, created app/views/notes/show.html.erb displaying all fields and tags, with connection error handling
 - [x] Display notes as cards on index (card-style CSS layout, each card links to detail page) — added CSS grid card layout, updated index view with `.note-card` links, added `resources :notes` route
 - [x] Handle AnkiConnect unavailable gracefully (rescue + flash error in `NotesController#index`) — rescued ConnectionError in index action, set flash.now[:alert], assigned @notes=[], added flash rendering to layout
 - [x] Create `AnkiConnect::Client` service object with `find_notes(deck:)` and `notes_info(ids:)` methods — created app/services/anki_connect/client.rb using Net::HTTP with ConnectionError handling
