@@ -1,4 +1,6 @@
 spec: spec.md
 docs_dir: .jijitsu/docs
 system_prompt: .jijitsu/jitsu.md
+implement_prompt: .jijitsu/implement.md
+process: .jijitsu/process.md
 interval: 60

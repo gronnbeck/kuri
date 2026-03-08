@@ -11,17 +11,21 @@ abort "Error: .jijitsu.yml not found in #{ROOT}" unless File.exist?(CONFIG_FILE)
 
 config = YAML.load_file(CONFIG_FILE)
 
-spec_file   = File.join(ROOT, config["spec"]           || "spec.md")
-docs_dir    = File.join(ROOT, config["docs_dir"]       || ".jijitsu/docs")
-prompt_file = File.join(ROOT, config["system_prompt"]  || ".jijitsu/jitsu.md")
-interval    = (config["interval"] || 60).to_i
-once        = ARGV.include?("--once")
+spec_file        = File.join(ROOT, config["spec"]             || "spec.md")
+docs_dir         = File.join(ROOT, config["docs_dir"]         || ".jijitsu/docs")
+prompt_file      = File.join(ROOT, config["system_prompt"]    || ".jijitsu/jitsu.md")
+implement_file   = File.join(ROOT, config["implement_prompt"] || ".jijitsu/implement.md")
+process_file     = File.join(ROOT, config["process"]          || ".jijitsu/process.md")
+interval         = (config["interval"] || 60).to_i
+once             = ARGV.include?("--once")
 
 abort "Error: system prompt not found: #{prompt_file}" unless File.exist?(prompt_file)
+abort "Error: implement prompt not found: #{implement_file}" unless File.exist?(implement_file)
 
 FileUtils.mkdir_p(docs_dir)
 
-system_prompt = File.read(prompt_file)
+system_prompt    = File.read(prompt_file)
+implement_prompt = File.read(implement_file)
 
 def run_claude(prompt)
   IO.popen(%w[claude --print --dangerously-skip-permissions], "r+") do |io|
@@ -31,22 +35,17 @@ def run_claude(prompt)
   end
 end
 
-if once
-  puts "Jijitsu — running once on #{config["spec"]}."
-else
-  puts "Jijitsu — watching #{config["spec"]} every #{interval}s. Ctrl+C to stop."
+def ts
+  Time.now.strftime("%H:%M:%S")
 end
-puts
 
-def process(spec_file, docs_dir, system_prompt, config)
+def spec_cycle(spec_file, docs_dir, system_prompt, config)
   unless File.exist?(spec_file)
-    warn "[#{Time.now.strftime("%H:%M:%S")}] #{config["spec"]} not found — skipping."
-    return false
+    warn "[#{Time.now.strftime("%H:%M:%S")}] #{config["spec"]} not found — skipping spec cycle."
+    return
   end
 
-  spec_content = File.read(spec_file)
-
-  puts "[#{Time.now.strftime("%H:%M:%S")}] Processing #{config["spec"]}..."
+  puts "[#{ts}] Spec cycle — processing #{config["spec"]}..."
 
   prompt = <<~PROMPT
     #{system_prompt}
@@ -58,22 +57,58 @@ def process(spec_file, docs_dir, system_prompt, config)
 
     Current contents of the main spec:
 
-    #{spec_content}
+    #{File.read(spec_file)}
 
     Process the spec now. Read any existing linked docs in #{docs_dir} before writing, so you can diff and update incrementally.
   PROMPT
 
   run_claude(prompt)
-  true
+end
+
+def implement_cycle(docs_dir, implement_prompt, process_file)
+  tasks_file = File.join(docs_dir, "tasks.md")
+
+  unless File.exist?(tasks_file)
+    puts "[#{ts}] Implement cycle — no tasks.md yet, skipping."
+    return
+  end
+
+  process_guide = File.exist?(process_file) ? File.read(process_file) : ""
+
+  puts "[#{ts}] Implement cycle — picking up next task..."
+
+  prompt = <<~PROMPT
+    #{implement_prompt}
+
+    ---
+
+    Tasks file: #{tasks_file}
+    Development process guide:
+
+    #{process_guide}
+
+    Implement the next task now.
+  PROMPT
+
+  run_claude(prompt)
 end
 
 if once
-  process(spec_file, docs_dir, system_prompt, config)
-  puts "[#{Time.now.strftime("%H:%M:%S")}] Done."
+  puts "Jijitsu — running once on #{config["spec"]}."
+else
+  puts "Jijitsu — watching #{config["spec"]} every #{interval}s. Ctrl+C to stop."
+end
+puts
+
+if once
+  spec_cycle(spec_file, docs_dir, system_prompt, config)
+  implement_cycle(docs_dir, implement_prompt, process_file)
+  puts "[#{ts}] Done."
 else
   loop do
-    process(spec_file, docs_dir, system_prompt, config)
-    puts "[#{Time.now.strftime("%H:%M:%S")}] Done. Sleeping #{interval}s...\n\n"
+    spec_cycle(spec_file, docs_dir, system_prompt, config)
+    implement_cycle(docs_dir, implement_prompt, process_file)
+    puts "[#{ts}] Done. Sleeping #{interval}s...\n\n"
     sleep interval
   rescue Interrupt
     puts "\nStopped."
