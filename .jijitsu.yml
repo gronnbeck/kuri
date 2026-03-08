@@ -1,0 +1,4 @@
+spec: spec.md
+docs_dir: .jijitsu/docs
+system_prompt: .jijitsu/jitsu.md
+interval: 60
