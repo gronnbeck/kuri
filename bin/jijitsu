@@ -18,16 +18,19 @@ docs_dir         = File.join(ROOT, config["docs_dir"]         || ".jijitsu/docs"
 prompt_file      = File.join(ROOT, config["system_prompt"]    || ".jijitsu/jitsu.md")
 implement_file   = File.join(ROOT, config["implement_prompt"] || ".jijitsu/implement.md")
 process_file     = File.join(ROOT, config["process"]          || ".jijitsu/process.md")
+verify_file      = File.join(ROOT, config["verify_prompt"]    || ".jijitsu/verify.md")
 interval         = (config["interval"] || 60).to_i
 once             = ARGV.include?("--once")
 
 abort "Error: system prompt not found: #{prompt_file}" unless File.exist?(prompt_file)
 abort "Error: implement prompt not found: #{implement_file}" unless File.exist?(implement_file)
+abort "Error: verify prompt not found: #{verify_file}"    unless File.exist?(verify_file)
 
 FileUtils.mkdir_p(docs_dir)
 
 system_prompt    = File.read(prompt_file)
 implement_prompt = File.read(implement_file)
+verify_prompt    = File.read(verify_file)
 
 def run_claude(prompt)
   IO.popen(%w[claude --print --dangerously-skip-permissions], "r+") do |io|
@@ -106,6 +109,45 @@ def git_commit_docs(spec_file, docs_dir)
   system("git", "-C", ROOT, "commit", "-m", "jijitsu: update spec docs [auto]")
 end
 
+def verify_cycle(docs_dir, verify_prompt, sums_file)
+  product_file  = File.join(docs_dir, "product.md")
+  technical_file = File.join(docs_dir, "technical.md")
+
+  unless File.exist?(product_file) || File.exist?(technical_file)
+    puts "[#{ts}] Verify cycle — no spec docs yet, skipping."
+    return
+  end
+
+  combined = [product_file, technical_file]
+    .select { |f| File.exist?(f) }
+    .map { |f| md5(f) }
+    .join(":")
+
+  if load_sums(sums_file)["verify"] == combined
+    puts "[#{ts}] Verify cycle — no changes, skipping."
+    return
+  end
+
+  puts "[#{ts}] Verify cycle — checking spec against codebase..."
+
+  prompt = <<~PROMPT
+    #{verify_prompt}
+
+    ---
+
+    Docs directory: #{docs_dir}
+    Project root: #{ROOT}
+
+    Check the spec against the codebase now and write #{File.join(docs_dir, "drift.md")}.
+  PROMPT
+
+  run_claude(prompt)
+
+  sums = load_sums(sums_file)
+  sums["verify"] = combined
+  File.write(sums_file, sums.to_yaml)
+end
+
 def implement_cycle(docs_dir, implement_prompt, process_file, sums_file)
   tasks_file = File.join(docs_dir, "tasks.md")
 
@@ -150,11 +192,13 @@ puts
 if once
   spec_cycle(spec_file, docs_dir, system_prompt, config, SUMS_FILE)
   implement_cycle(docs_dir, implement_prompt, process_file, SUMS_FILE)
+  verify_cycle(docs_dir, verify_prompt, SUMS_FILE)
   puts "[#{ts}] Done."
 else
   loop do
     spec_cycle(spec_file, docs_dir, system_prompt, config, SUMS_FILE)
     implement_cycle(docs_dir, implement_prompt, process_file, SUMS_FILE)
+    verify_cycle(docs_dir, verify_prompt, SUMS_FILE)
     puts "[#{ts}] Done. Sleeping #{interval}s...\n\n"
     sleep interval
   rescue Interrupt
