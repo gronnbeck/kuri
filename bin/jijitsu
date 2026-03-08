@@ -97,7 +97,7 @@ def git_commit_docs(spec_file, docs_dir)
   staged = `git -C #{ROOT} add --dry-run #{spec_file} #{docs_dir} 2>/dev/null`.strip
   return if staged.empty?
 
-  system("git", "-C", ROOT, "add", spec_file, docs_dir)
+  system("git", "-C", ROOT, "add", spec_file, docs_dir, SUMS_FILE)
   diff = `git -C #{ROOT} diff --cached --name-only`.strip
   return if diff.empty?
 
