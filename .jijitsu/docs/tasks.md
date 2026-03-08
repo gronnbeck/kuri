@@ -1,9 +1,10 @@
 # Tasks
 
 ## Next
+- [ ] Display notes as cards on index (card-style CSS layout, each card links to detail page)
+- [ ] Add `NotesController#show` action + route + view for note detail page (front/back/tags/all fields)
 
 ## Backlog
-- [ ] Card navigation — click a note on the index to view full card detail (front/back/tags)
 - [ ] Pagination or infinite scroll for large decks
 - [ ] Field selection — let user pick which note fields to display
 - [ ] Search / filter notes by tag or query on the index page

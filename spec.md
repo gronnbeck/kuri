@@ -5,6 +5,8 @@
 
 * List all my notes from Personal mining using anki connect in index
 * Expose the anki cards on root page for me to navigate
+* Notes should be listed as cards on index and we can click into them for details
+* Add Notes details page
 
 ## References
 

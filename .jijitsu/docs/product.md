@@ -10,6 +10,12 @@ Kuri is a personal note-browsing app that surfaces Anki cards from a user's coll
 - The index page displays all notes from the user's "Personal mining" Anki deck.
 - Notes are fetched live via AnkiConnect (Anki's local HTTP API).
 - The user can see their mined notes without opening Anki directly.
+- Notes are displayed as cards (card-style UI) on the index page.
+- Clicking a card navigates to a detail view for that note.
+
+### Note Detail Page
+- A dedicated page shows the full content of a single note (front, back, tags, all fields).
+- Accessible by clicking any card on the index.
 
 ## Open Questions
 
