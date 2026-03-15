@@ -3,11 +3,23 @@
 class WordTranslator
   PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
 
+  Result = Struct.new(:japanese, :furigana, :description, keyword_init: true)
+
   PROMPT = <<~PROMPT
-    You are a Japanese dictionary.
-    Translate the English word "%s" to Japanese.
-    Respond with only the Japanese word or short phrase — kanji/kana, no romaji, no explanation.
-    If the word has multiple common forms, prefer the most beginner-friendly one.
+    You are a Japanese dictionary for beginner learners.
+    Look up the English word "%s" and respond with JSON only — no markdown, no explanation.
+
+    Use this exact structure:
+    {
+      "japanese": "<kanji/kana form — e.g. 食べる or コーヒー>",
+      "furigana": "<hiragana reading — e.g. たべる>",
+      "description": "<short English gloss — e.g. to eat (verb)>"
+    }
+
+    Rules:
+    - Prefer the most common beginner-friendly form
+    - If the word is purely katakana (loanword), furigana may repeat it in hiragana
+    - Keep description to one short phrase
   PROMPT
 
   def self.call(word)
@@ -31,7 +43,14 @@ class WordTranslator
     response = lines.find { |l| l["type"] == "response" }
     raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
 
-    response["content"].strip
+    data = JSON.parse(response["content"].strip)
+    Result.new(
+      japanese:    data["japanese"].to_s.strip,
+      furigana:    data["furigana"].to_s.strip,
+      description: data["description"].to_s.strip
+    )
+  rescue JSON::ParserError => e
+    raise "unexpected LLM response format: #{e.message}"
   end
 
   private

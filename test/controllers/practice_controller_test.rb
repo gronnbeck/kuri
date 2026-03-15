@@ -5,18 +5,31 @@ require "test_helper"
 class PracticeControllerTest < ActionDispatch::IntegrationTest
   # --- word_hint ---
 
-  test "word_hint returns japanese translation as json" do
-    translator_result = "コーヒー"
+  test "word_hint returns structured json from translator" do
+    result = WordTranslator::Result.new(japanese: "コーヒー", furigana: "こーひー", description: "coffee (noun)")
     original = WordTranslator.method(:call)
-    WordTranslator.define_singleton_method(:call) { |_| translator_result }
+    WordTranslator.define_singleton_method(:call) { |_| result }
 
     get practice_word_hint_path, params: { word: "coffee" }
 
     assert_response :success
     assert_equal "application/json", response.media_type
-    assert_equal "コーヒー", response.parsed_body["japanese"]
+    body = response.parsed_body
+    assert_equal "コーヒー", body["japanese"]
+    assert_equal "こーひー", body["furigana"]
+    assert_equal "coffee (noun)", body["description"]
   ensure
     WordTranslator.define_singleton_method(:call, original)
+  end
+
+  test "word_hint serves cached result from db without calling translator" do
+    Word.create!(english: "water", japanese: "水", furigana: "みず", description: "water (noun)")
+
+    get practice_word_hint_path, params: { word: "water" }
+
+    assert_response :success
+    assert_equal "水", response.parsed_body["japanese"]
+    assert_equal "みず", response.parsed_body["furigana"]
   end
 
   test "word_hint returns 400 when word param is missing" do

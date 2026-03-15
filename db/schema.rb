@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_075138) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_075608) do
   create_table "decks", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "last_synced_at"
@@ -33,7 +33,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_075138) do
 
   create_table "words", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "description"
     t.string "english", null: false
+    t.string "furigana"
     t.string "japanese", null: false
     t.datetime "updated_at", null: false
     t.index ["english"], name: "index_words_on_english", unique: true

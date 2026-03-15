@@ -32,13 +32,16 @@ class PracticeController < ApplicationController
     word = params[:word].to_s.strip
     return render json: { error: "missing word" }, status: :bad_request if word.blank?
 
-    record = Word.lookup(word)
-    japanese = record&.japanese || begin
-      WordTranslator.call(word).tap do |jp|
-        Word.create!(english: word.downcase, japanese: jp)
-      end
+    record = Word.lookup(word) || begin
+      result = WordTranslator.call(word)
+      Word.create!(
+        english:     word.downcase,
+        japanese:    result.japanese,
+        furigana:    result.furigana,
+        description: result.description
+      )
     end
-    render json: { japanese: japanese }
+    render json: { japanese: record.japanese, furigana: record.furigana, description: record.description }
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
