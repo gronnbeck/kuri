@@ -32,7 +32,9 @@ class PracticeController < ApplicationController
     word = params[:word].to_s.strip
     return render json: { error: "missing word" }, status: :bad_request if word.blank?
 
-    japanese = WordTranslator.call(word)
+    japanese = Rails.cache.fetch("word_hint/#{word.downcase}", expires_in: 30.days) do
+      WordTranslator.call(word)
+    end
     render json: { japanese: japanese }
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity

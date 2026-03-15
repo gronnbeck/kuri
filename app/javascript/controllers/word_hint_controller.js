@@ -27,8 +27,7 @@ export default class extends Controller {
       return
     }
 
-    this._activeWord = wordEl
-    this._show(wordEl, "…")
+    this._showLoading(wordEl)
 
     try {
       const res = await fetch(`/practice/word_hint?word=${encodeURIComponent(word)}`)
@@ -41,8 +40,23 @@ export default class extends Controller {
     }
   }
 
+  _showLoading(anchor) {
+    this._hide()
+    this._activeWord = anchor
+
+    const tip = document.createElement("div")
+    tip.className = "word-hint-tooltip word-hint-tooltip--loading"
+    tip.innerHTML = '<span class="wh-dot">·</span><span class="wh-dot">·</span><span class="wh-dot">·</span>'
+    document.body.appendChild(tip)
+    this._tooltip = tip
+    this._position(tip, anchor)
+    anchor.classList.add("sp-word--active")
+    setTimeout(() => document.addEventListener("click", this._dismissHandler), 0)
+  }
+
   _show(anchor, text) {
     this._hide()
+    this._activeWord = anchor
 
     const tip = document.createElement("div")
     tip.className = "word-hint-tooltip"
@@ -50,20 +64,20 @@ export default class extends Controller {
     document.body.appendChild(tip)
     this._tooltip = tip
 
+    this._tooltip = tip
+    this._position(tip, anchor)
+    anchor.classList.add("sp-word--active")
+    setTimeout(() => document.addEventListener("click", this._dismissHandler), 0)
+  }
+
+  _position(tip, anchor) {
     const rect = anchor.getBoundingClientRect()
     const tipRect = tip.getBoundingClientRect()
     let top = rect.bottom + window.scrollY + 6
     let left = rect.left + window.scrollX + rect.width / 2 - tipRect.width / 2
-
-    // Keep within viewport
     left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8))
-
     tip.style.top = `${top}px`
     tip.style.left = `${left}px`
-
-    anchor.classList.add("sp-word--active")
-    // Defer so the current click event doesn't immediately trigger dismiss
-    setTimeout(() => document.addEventListener("click", this._dismissHandler), 0)
   }
 
   _hide() {
