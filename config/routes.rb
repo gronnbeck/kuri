@@ -9,7 +9,21 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  root "notes#index"
+  root "home#index"
+  get "practice", to: "practice#index"
+  get "practice/word_guess", to: "practice#word_guess"
+  post "practice/word_guess", to: "practice#do_word_guess"
+  get "practice/sentence_transformation", to: "practice#sentence_transformation"
+  get "practice/guided_translation", to: "practice#guided_translation"
+  get "practice/micro_sentences", to: "practice#micro_sentences"
+  get "practice/word_hint", to: "practice#word_hint"
+  get "practice/sentence_patterns/exercise", to: "practice#sentence_patterns_exercise", as: :practice_sentence_patterns_exercise
+  post "practice/sentence_patterns/exercise", to: "practice#check_sentence_pattern", as: :check_sentence_pattern
+  get "practice/sentence_patterns", to: "practice#sentence_patterns"
   resources :notes, only: [ :index, :show ]
+  resources :decks, only: [ :index, :new, :create, :update, :destroy ] do
+    collection do
+      post :sync
+    end
+  end
 end

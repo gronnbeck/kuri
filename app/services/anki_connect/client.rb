@@ -10,6 +10,10 @@ module AnkiConnect
     ENDPOINT = URI("http://localhost:8765")
     VERSION = 6
 
+    def deck_names
+      request("deckNames")
+    end
+
     def find_notes(deck:)
       request("findNotes", query: "deck:\"#{deck}\"")
     end

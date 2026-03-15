@@ -1,0 +1,148 @@
+# frozen_string_literal: true
+
+require "test_helper"
+
+class PracticeControllerTest < ActionDispatch::IntegrationTest
+  # --- word_hint ---
+
+  test "word_hint returns japanese translation as json" do
+    translator_result = "コーヒー"
+    original = WordTranslator.method(:call)
+    WordTranslator.define_singleton_method(:call) { |_| translator_result }
+
+    get practice_word_hint_path, params: { word: "coffee" }
+
+    assert_response :success
+    assert_equal "application/json", response.media_type
+    assert_equal "コーヒー", response.parsed_body["japanese"]
+  ensure
+    WordTranslator.define_singleton_method(:call, original)
+  end
+
+  test "word_hint returns 400 when word param is missing" do
+    get practice_word_hint_path, params: { word: "" }
+    assert_response :bad_request
+  end
+
+  test "word_hint returns 422 when translator raises" do
+    original = WordTranslator.method(:call)
+    WordTranslator.define_singleton_method(:call) { |_| raise "psi not found" }
+
+    get practice_word_hint_path, params: { word: "coffee" }
+
+    assert_response :unprocessable_entity
+    assert_match "psi not found", response.parsed_body["error"]
+  ensure
+    WordTranslator.define_singleton_method(:call, original)
+  end
+
+  # --- index ---
+
+  test "index renders exercise cards" do
+    get practice_path
+    assert_response :success
+    assert_select ".exercise-card", 5
+    assert_select ".exercise-card", text: /Sentence Patterns/
+    assert_select ".exercise-card", text: /Word Guess/
+  end
+
+  # --- sentence_patterns reference page ---
+
+  test "sentence_patterns renders reference grid and start button" do
+    get practice_sentence_patterns_path
+    assert_response :success
+    assert_select ".pattern-card", 20
+    assert_select "a[href='#{practice_sentence_patterns_exercise_path}']", text: /Start Practice/
+  end
+
+  # --- sentence_patterns_exercise (GET) ---
+
+  test "sentence_patterns_exercise renders a pattern and english sentence" do
+    get practice_sentence_patterns_exercise_path
+    assert_response :success
+    assert_select ".sp-pattern-formula"
+    assert_select ".sp-english"
+    assert_select "textarea[name='answer']"
+    assert_select "input[name='pattern_index']"
+    assert_select "input[name='english']"
+    assert_select "button[type='submit']", text: /Check/
+    assert_select "a", text: /Exit/
+  end
+
+  # --- check_sentence_pattern (POST) ---
+
+  test "check renders correct result and countdown when answer is correct" do
+    with_checker_result(correct: true, feedback: "Perfect!") do
+      post check_sentence_pattern_path, params: {
+        pattern_index: 6,
+        english: "I eat bread.",
+        answer: "私はパンを食べます。"
+      }
+    end
+
+    assert_response :success
+    assert_select ".sp-result--correct"
+    assert_select ".sp-result-verdict", text: /Correct/
+    assert_select ".sp-result-feedback", text: /Perfect!/
+    assert_select "#sp-countdown"
+  end
+
+  test "check renders incorrect result and keeps form when answer is wrong" do
+    with_checker_result(correct: false, feedback: "Try again!") do
+      post check_sentence_pattern_path, params: {
+        pattern_index: 6,
+        english: "I eat bread.",
+        answer: "パンです。"
+      }
+    end
+
+    assert_response :success
+    assert_select ".sp-result--incorrect"
+    assert_select ".sp-result-verdict", text: /Not quite/
+    assert_select ".sp-result-feedback", text: /Try again!/
+    assert_select "textarea[name='answer']"
+    assert_select "#sp-countdown", count: 0
+  end
+
+  test "check pre-fills textarea with the previous answer on incorrect" do
+    with_checker_result(correct: false, feedback: "Close!") do
+      post check_sentence_pattern_path, params: {
+        pattern_index: 7,
+        english: "I drink juice.",
+        answer: "ジュースです。"
+      }
+    end
+
+    assert_select "textarea[name='answer']", text: /ジュースです。/
+  end
+
+  test "check passes the correct pattern text to the checker" do
+    expected_pattern = Views::Practice::SentencePatterns::PATTERNS[0][:pattern]
+    received_pattern = nil
+
+    with_checker_result(correct: true, feedback: "Good!", spy: ->(pattern:, **) { received_pattern = pattern }) do
+      post check_sentence_pattern_path, params: {
+        pattern_index: 0,
+        english: "She is a teacher.",
+        answer: "田中さんは先生です。"
+      }
+    end
+
+    assert_equal expected_pattern, received_pattern
+  end
+
+  private
+
+  # Temporarily replaces SentencePatternChecker.call for the duration of the block.
+  def with_checker_result(correct:, feedback:, spy: nil)
+    original = SentencePatternChecker.method(:call)
+    result = SentencePatternChecker::Result.new(correct: correct, feedback: feedback)
+    SentencePatternChecker.define_singleton_method(:call) do |**kwargs|
+      spy&.call(**kwargs)
+      result
+    end
+    yield
+  ensure
+    SentencePatternChecker.define_singleton_method(:call, original)
+  end
+end

@@ -1,23 +1,21 @@
 # frozen_string_literal: true
 
 class NotesController < ApplicationController
-  DECK = "Personal mining"
+  PER_PAGE = 20
 
   def index
-    client = AnkiConnect::Client.new
-    ids = client.find_notes(deck: DECK)
-    @notes = client.notes_info(ids: ids)
-  rescue AnkiConnect::Client::ConnectionError => e
-    flash.now[:alert] = "AnkiConnect unavailable: #{e.message}"
-    @notes = []
+    page = [params.fetch(:page, 1).to_i, 1].max
+    scope = Note.order(created_at: :desc)
+    total_pages = [(scope.count / PER_PAGE.to_f).ceil, 1].max
+    page = [page, total_pages].min
+    notes = scope.offset((page - 1) * PER_PAGE).limit(PER_PAGE)
+    render ::Views::Notes::Index.new(notes: notes, page: page, total_pages: total_pages)
   end
 
   def show
-    client = AnkiConnect::Client.new
-    results = client.notes_info(ids: [ params[:id].to_i ])
-    @note = results.first
-  rescue AnkiConnect::Client::ConnectionError => e
-    flash.now[:alert] = "AnkiConnect unavailable: #{e.message}"
-    @note = nil
+    note = Note.find_by!(anki_id: params[:id])
+    render ::Views::Notes::Show.new(note: note)
+  rescue ActiveRecord::RecordNotFound
+    redirect_to notes_path, alert: "Note not found."
   end
 end

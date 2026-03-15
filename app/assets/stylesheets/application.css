@@ -9,6 +9,189 @@
  * Consider organizing styles into separate files for maintainability.
  */
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+  font-family: system-ui, sans-serif;
+}
+
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  gap: 2rem;
+}
+
+.sidebar-logo a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.sidebar ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar ul li a {
+  color: #ccc;
+  text-decoration: none;
+  display: block;
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+}
+
+.sidebar ul li a:hover {
+  background: #2e2e2e;
+  color: #fff;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.welcome h1 {
+  margin-bottom: 0.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background: #1a1a1a;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button--secondary {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
+}
+
+.decks-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.decks-table th,
+.decks-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.decks-table th {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 1.5rem 0;
+}
+
+.form-group select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 320px;
+}
+
+.practice {
+  max-width: 720px;
+}
+
+.practice-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.practice-card-row .note-card {
+  flex: 1;
+  cursor: default;
+  pointer-events: none;
+}
+
+.practice-guess {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9f9f9;
+}
+
+.practice-guess-label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 0.05em;
+}
+
+.practice-guess-word {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.practice form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.practice-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.practice-input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
 .notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -40,4 +223,375 @@
   margin-top: 0.75rem;
   font-size: 0.85em;
   color: #666;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.pagination a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 0.9em;
+}
+
+/* Practice index */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.exercise-card {
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.exercise-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: #aaa;
+}
+
+.exercise-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.exercise-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.difficulty-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.difficulty-badge--easy {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.difficulty-badge--medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.difficulty-badge--hard {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.exercise-card-desc {
+  font-size: 0.88rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Exercise pages shared */
+.exercise-content {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.exercise-section h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
+
+.exercise-instructions {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.jp {
+  font-size: 1.1rem;
+}
+
+.en {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Sentence lists */
+.sentence-list,
+.pattern-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sentence-item,
+.pattern-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.6rem 0.75rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.exercise-base-sentence {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: #f0f4ff;
+  border-radius: 6px;
+  border: 1px solid #c8d4f8;
+}
+
+.exercise-try .practice-input {
+  margin-top: 0.5rem;
+}
+
+/* Guided translation */
+.translation-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.translation-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.translation-en {
+  font-weight: 600;
+}
+
+.translation-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.translation-input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.translation-answer {
+  font-size: 1rem;
+  color: #1a6c2e;
+  padding: 0.25rem 0;
+}
+
+.translation-answer.hidden {
+  display: none;
+}
+
+/* Micro sentences */
+.micro-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.micro-number {
+  width: 1.5rem;
+  flex-shrink: 0;
+  color: #888;
+}
+
+.micro-input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+/* Sentence patterns grid */
+.patterns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 0.75rem;
+}
+
+.pattern-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.pattern-number {
+  width: 1.5rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #aaa;
+  padding-top: 0.1rem;
+}
+
+.pattern-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pattern-formula {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.pattern-example {
+  font-size: 1rem;
+}
+
+.pattern-meaning {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Sentence pattern exercise */
+.sp-exercise {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sp-exercise-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sp-pattern-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+}
+
+.sp-pattern-formula {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.sp-english {
+  font-size: 1.2rem;
+}
+
+.sp-form-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.sp-result {
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sp-result--correct {
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+}
+
+.sp-result--incorrect {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+
+.sp-result-verdict {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.sp-result-feedback {
+  font-size: 0.95rem;
+}
+
+.sp-result-countdown {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+.sp-word {
+  cursor: pointer;
+  border-bottom: 1px dashed #aaa;
+  transition: color 0.1s, border-color 0.1s;
+}
+
+.sp-word:hover {
+  color: #1a1a1a;
+  border-bottom-color: #1a1a1a;
+}
+
+.sp-word--active {
+  color: #1a4bcc;
+  border-bottom-color: #1a4bcc;
+}
+
+.word-hint-tooltip {
+  position: absolute;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.word-hint-tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: #1a1a1a;
 }
