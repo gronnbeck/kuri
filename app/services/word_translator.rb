@@ -43,7 +43,7 @@ class WordTranslator
     response = lines.find { |l| l["type"] == "response" }
     raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
 
-    data = JSON.parse(response["content"].strip)
+    data = JSON.parse(response["content"].strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, ""))
     Result.new(
       japanese:    data["japanese"].to_s.strip,
       furigana:    data["furigana"].to_s.strip,
