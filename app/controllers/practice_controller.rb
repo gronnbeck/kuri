@@ -21,7 +21,7 @@ class PracticeController < ApplicationController
   end
 
   def guided_translation
-    sentences = TranslationSentence.order(:id)
+    sentences = TranslationSentence.order("RANDOM()").limit(10)
     render ::Views::Practice::GuidedTranslation.new(sentences: sentences)
   end
 
