@@ -10,6 +10,7 @@ class Views::Practice::GuidedTranslation < ApplicationView
       h1 { "Guided Translation" }
       div(class: "header-actions") do
         button_to "Generate new", helpers.generate_translation_sentence_path, class: "button button--secondary"
+        link_to "Practice", helpers.guided_translation_exercise_path, class: "button"
         link_to "← All Exercises", helpers.practice_path, class: "button button--secondary"
       end
     end

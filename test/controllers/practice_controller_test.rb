@@ -5,6 +5,39 @@ require "test_helper"
 class PracticeControllerTest < ActionDispatch::IntegrationTest
   # --- guided_translation ---
 
+  test "guided_translation_exercise renders a random sentence with form" do
+    TranslationSentence.create!(english: "I eat sushi.", japanese: "寿司を食べます。")
+    get guided_translation_exercise_path
+    assert_response :success
+    assert_select ".sp-english"
+    assert_select "textarea[name='answer']"
+    assert_select "button[type='submit']", text: /Check/
+    assert_select "a", text: /Exit/
+  end
+
+  test "check_guided_translation shows correct result" do
+    sentence = TranslationSentence.create!(english: "I eat sushi.", japanese: "寿司を食べます。")
+    with_checker_result(correct: true, feedback: "Perfect!") do
+      post check_guided_translation_path, params: { sentence_id: sentence.id, answer: "寿司を食べます。" }
+    end
+
+    assert_response :success
+    assert_select ".sp-result--correct"
+    assert_select "#sp-countdown"
+  end
+
+  test "check_guided_translation shows incorrect result with correct answer revealed" do
+    sentence = TranslationSentence.create!(english: "I eat sushi.", japanese: "寿司を食べます。")
+    with_checker_result(correct: false, feedback: "Try again!") do
+      post check_guided_translation_path, params: { sentence_id: sentence.id, answer: "wrong" }
+    end
+
+    assert_response :success
+    assert_select ".sp-result--incorrect"
+    assert_select ".sp-result-answer", text: /寿司を食べます。/
+    assert_select "textarea[name='answer']"
+  end
+
   test "guided_translation renders sentences from db" do
     TranslationSentence.create!(english: "I eat bread.", japanese: "パンを食べます。")
     get practice_guided_translation_path

@@ -551,6 +551,11 @@ body {
   font-size: 0.95rem;
 }
 
+.sp-result-answer {
+  font-size: 1.1rem;
+  margin-top: 0.25rem;
+}
+
 .sp-result-countdown {
   font-size: 0.85rem;
   color: #555;

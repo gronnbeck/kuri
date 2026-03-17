@@ -25,6 +25,22 @@ class PracticeController < ApplicationController
     render ::Views::Practice::GuidedTranslation.new(sentences: sentences)
   end
 
+  def guided_translation_exercise
+    sentence = TranslationSentence.order("RANDOM()").first
+    render ::Views::Practice::GuidedTranslationExercise.new(sentence: sentence, answer: nil, result: nil)
+  end
+
+  def check_guided_translation
+    sentence = TranslationSentence.find(params[:sentence_id])
+    answer   = params[:answer].to_s.strip
+    result   = SentencePatternChecker.call(
+      english: sentence.english,
+      pattern: "natural beginner Japanese",
+      answer:  answer
+    )
+    render ::Views::Practice::GuidedTranslationExercise.new(sentence: sentence, answer: answer, result: result)
+  end
+
   def generate_translation_sentence
     sentence = TranslationSentenceGenerator.call
     redirect_to practice_guided_translation_path,
