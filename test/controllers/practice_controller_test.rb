@@ -116,6 +116,52 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     WordTranslator.define_singleton_method(:call, original)
   end
 
+  # --- sentence_transformation (GET) ---
+
+  test "sentence_transformation renders base sentence and form" do
+    get practice_sentence_transformation_path
+    assert_response :success
+    assert_select ".sp-pattern-formula"
+    assert_select ".sp-english"
+    assert_select "textarea[name='answer']"
+    assert_select "input[name='sentence_index']"
+    assert_select "button[type='submit']", text: /Check/
+    assert_select "a", text: /All Exercises/
+  end
+
+  # --- check_sentence_transformation (POST) ---
+
+  test "check_sentence_transformation shows correct result and countdown" do
+    with_checker_result(correct: true, feedback: "Perfect!") do
+      post practice_sentence_transformation_path, params: { sentence_index: 0, answer: "私はコーヒーを飲みます。" }
+    end
+
+    assert_response :success
+    assert_select ".sp-result--correct"
+    assert_select ".sp-result-verdict", text: /Correct/
+    assert_select "#sp-countdown"
+  end
+
+  test "check_sentence_transformation shows incorrect result with correct answer and keeps form" do
+    with_checker_result(correct: false, feedback: "Try again!") do
+      post practice_sentence_transformation_path, params: { sentence_index: 0, answer: "wrong" }
+    end
+
+    assert_response :success
+    assert_select ".sp-result--incorrect"
+    assert_select ".sp-result-answer"
+    assert_select "textarea[name='answer']"
+    assert_select "#sp-countdown", count: 0
+  end
+
+  test "check_sentence_transformation pre-fills textarea with previous answer on incorrect" do
+    with_checker_result(correct: false, feedback: "Close!") do
+      post practice_sentence_transformation_path, params: { sentence_index: 0, answer: "飲みます。" }
+    end
+
+    assert_select "textarea[name='answer']", text: /飲みます。/
+  end
+
   # --- index ---
 
   test "index renders exercise cards" do

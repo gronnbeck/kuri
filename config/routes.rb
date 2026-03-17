@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   get "practice/word_guess", to: "practice#word_guess"
   post "practice/word_guess", to: "practice#do_word_guess"
   get "practice/sentence_transformation", to: "practice#sentence_transformation"
+  post "practice/sentence_transformation", to: "practice#check_sentence_transformation"
   get "practice/guided_translation", to: "practice#guided_translation"
   post "practice/guided_translation/generate", to: "practice#generate_translation_sentence", as: :generate_translation_sentence
   get "practice/guided_translation/exercise", to: "practice#guided_translation_exercise", as: :guided_translation_exercise

@@ -17,7 +17,26 @@ class PracticeController < ApplicationController
   end
 
   def sentence_transformation
-    render ::Views::Practice::SentenceTransformation.new
+    sentences = Views::Practice::SentenceTransformation::SENTENCES
+    idx = rand(sentences.length)
+    render ::Views::Practice::SentenceTransformation.new(
+      sentence: sentences[idx], sentence_index: idx, answer: nil, result: nil
+    )
+  end
+
+  def check_sentence_transformation
+    sentences = Views::Practice::SentenceTransformation::SENTENCES
+    idx       = params[:sentence_index].to_i
+    sentence  = sentences[idx]
+    answer    = params[:answer].to_s.strip
+    result    = SentencePatternChecker.call(
+      english: sentence[:en],
+      pattern: "a transformation of the base sentence 私はコーヒーを飲みます",
+      answer:  answer
+    )
+    render ::Views::Practice::SentenceTransformation.new(
+      sentence: sentence, sentence_index: idx, answer: answer, result: result
+    )
   end
 
   def guided_translation
