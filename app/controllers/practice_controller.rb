@@ -25,6 +25,14 @@ class PracticeController < ApplicationController
     render ::Views::Practice::GuidedTranslation.new(sentences: sentences)
   end
 
+  def generate_translation_sentence
+    sentence = TranslationSentenceGenerator.call
+    redirect_to practice_guided_translation_path,
+      notice: "Added: \"#{sentence.english}\""
+  rescue => e
+    redirect_to practice_guided_translation_path, alert: e.message
+  end
+
   def micro_sentences
     render ::Views::Practice::MicroSentences.new
   end

@@ -3,6 +3,40 @@
 require "test_helper"
 
 class PracticeControllerTest < ActionDispatch::IntegrationTest
+  # --- guided_translation ---
+
+  test "guided_translation renders sentences from db" do
+    TranslationSentence.create!(english: "I eat bread.", japanese: "パンを食べます。")
+    get practice_guided_translation_path
+    assert_response :success
+    assert_select ".translation-en", text: /I eat bread./
+  end
+
+  test "generate_translation_sentence creates a sentence and redirects with notice" do
+    sentence = TranslationSentence.new(english: "I buy coffee.", japanese: "コーヒーを買います。")
+    original = TranslationSentenceGenerator.method(:call)
+    TranslationSentenceGenerator.define_singleton_method(:call) { sentence }
+
+    post generate_translation_sentence_path
+
+    assert_redirected_to practice_guided_translation_path
+    assert_match "I buy coffee.", flash[:notice]
+  ensure
+    TranslationSentenceGenerator.define_singleton_method(:call, original)
+  end
+
+  test "generate_translation_sentence redirects with alert on failure" do
+    original = TranslationSentenceGenerator.method(:call)
+    TranslationSentenceGenerator.define_singleton_method(:call) { raise "psi not found" }
+
+    post generate_translation_sentence_path
+
+    assert_redirected_to practice_guided_translation_path
+    assert_match "psi not found", flash[:alert]
+  ensure
+    TranslationSentenceGenerator.define_singleton_method(:call, original)
+  end
+
   # --- word_hint ---
 
   test "word_hint returns structured json from translator" do
