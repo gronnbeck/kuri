@@ -21,7 +21,8 @@ class PracticeController < ApplicationController
   end
 
   def guided_translation
-    render ::Views::Practice::GuidedTranslation.new
+    sentences = TranslationSentence.order(:id)
+    render ::Views::Practice::GuidedTranslation.new(sentences: sentences)
   end
 
   def micro_sentences
