@@ -22,6 +22,9 @@ Rails.application.routes.draw do
   get "practice/daily_conversations", to: "practice#daily_conversations", as: :practice_daily_conversations
   get "practice/daily_conversations/exercise", to: "practice#daily_conversations_exercise", as: :daily_conversations_exercise
   post "practice/daily_conversations/exercise", to: "practice#check_daily_conversation", as: :check_daily_conversation
+  get "practice/useful_phrases", to: "practice#useful_phrases", as: :practice_useful_phrases
+  get "practice/useful_phrases/exercise", to: "practice#useful_phrases_exercise", as: :useful_phrases_exercise
+  post "practice/useful_phrases/exercise", to: "practice#check_useful_phrase", as: :check_useful_phrase
   get "practice/micro_sentences", to: "practice#micro_sentences"
   get "practice/word_hint", to: "practice#word_hint"
   get "practice/jp_word_hint", to: "practice#jp_word_hint"

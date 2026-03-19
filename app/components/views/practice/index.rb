@@ -27,6 +27,12 @@ class Views::Practice::Index < ApplicationView
       difficulty: :medium
     },
     {
+      title: "Useful Phrases",
+      description: "Practice real phrases from everyday contexts — translate from Japanese or produce from English.",
+      path_helper: :practice_useful_phrases_path,
+      difficulty: :easy
+    },
+    {
       title: "Daily Conversations",
       description: "Practice back-and-forth Japanese conversations in real settings like restaurants, cafes, and convenience stores.",
       path_helper: :practice_daily_conversations_path,

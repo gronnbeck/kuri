@@ -167,8 +167,9 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
   test "index renders exercise cards" do
     get practice_path
     assert_response :success
-    assert_select ".exercise-card", 6
+    assert_select ".exercise-card", 7
     assert_select ".exercise-card", text: /Sentence Patterns/
+    assert_select ".exercise-card", text: /Useful Phrases/
     assert_select ".exercise-card", text: /Daily Conversations/
     assert_select ".exercise-card", text: /Word Guess/
   end
@@ -256,6 +257,58 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal expected_pattern, received_pattern
+  end
+
+  # --- useful_phrases ---
+
+  test "useful_phrases renders mode selection" do
+    get practice_useful_phrases_path
+    assert_response :success
+    assert_select ".exercise-card", text: /Consuming/
+    assert_select ".exercise-card", text: /Producing/
+  end
+
+  test "useful_phrases_exercise renders phrase and form for consuming mode" do
+    get useful_phrases_exercise_path, params: { mode: "consuming" }
+    assert_response :success
+    assert_select ".sp-pattern-formula"
+    assert_select "textarea[name='answer']"
+    assert_select "input[name='mode'][value='consuming']"
+    assert_select "input[name='phrase_index']"
+    assert_select "button[type='submit']", text: /Check/
+  end
+
+  test "useful_phrases_exercise renders english prompt for producing mode" do
+    get useful_phrases_exercise_path, params: { mode: "producing" }
+    assert_response :success
+    assert_select ".sp-english"
+    assert_select "textarea[name='answer']"
+    assert_select "input[name='mode'][value='producing']"
+  end
+
+  test "useful_phrases_exercise defaults to consuming for unknown mode" do
+    get useful_phrases_exercise_path, params: { mode: "unknown" }
+    assert_response :success
+    assert_select "input[name='mode'][value='consuming']"
+  end
+
+  test "check_useful_phrase shows correct result and countdown" do
+    with_phrase_result(correct: true, feedback: "Perfect!") do
+      post check_useful_phrase_path, params: { mode: "consuming", phrase_index: 0, answer: "Excuse me" }
+    end
+    assert_response :success
+    assert_select ".sp-result--correct"
+    assert_select "#sp-countdown"
+  end
+
+  test "check_useful_phrase shows incorrect result with correct answer revealed" do
+    with_phrase_result(correct: false, feedback: "Try again!") do
+      post check_useful_phrase_path, params: { mode: "producing", phrase_index: 0, answer: "wrong" }
+    end
+    assert_response :success
+    assert_select ".sp-result--incorrect"
+    assert_select ".sp-result-answer"
+    assert_select "textarea[name='answer']"
   end
 
   # --- jp_word_hint ---
@@ -393,6 +446,15 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     yield
   ensure
     SentencePatternChecker.define_singleton_method(:call, original)
+  end
+
+  def with_phrase_result(correct:, feedback:)
+    original = UsefulPhraseChecker.method(:call)
+    result = UsefulPhraseChecker::Result.new(correct: correct, feedback: feedback)
+    UsefulPhraseChecker.define_singleton_method(:call) { |**_| result }
+    yield
+  ensure
+    UsefulPhraseChecker.define_singleton_method(:call, original)
   end
 
   def with_conversation_result(next_line_jp:, next_line_en:, next_line_furigana:, feedback: nil, correct: nil, scenario_complete: false, hints: [])

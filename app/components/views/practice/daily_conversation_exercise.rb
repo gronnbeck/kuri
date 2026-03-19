@@ -120,8 +120,8 @@ class Views::Practice::DailyConversationExercise < ApplicationView
   end
 
   def render_phrases_section
-    div(class: "conv-sidebar-section") do
-      h3(class: "conv-sidebar-title") { "Useful Phrases" }
+    details(class: "conv-sidebar-section") do
+      summary(class: "conv-sidebar-title conv-sidebar-summary") { "Useful Phrases" }
       div(class: "conv-phrase-list") do
         @theme[:phrases].each do |phrase|
           div(class: "conv-phrase") do
@@ -134,8 +134,8 @@ class Views::Practice::DailyConversationExercise < ApplicationView
   end
 
   def render_hints_section
-    div(class: "conv-sidebar-section conv-sidebar-section--hints") do
-      h3(class: "conv-sidebar-title") { "Hints" }
+    details(class: "conv-sidebar-section conv-sidebar-section--hints") do
+      summary(class: "conv-sidebar-title conv-sidebar-summary") { "Hints" }
       p(class: "conv-sidebar-subtitle") { "Phrases you could use right now:" }
       div(class: "conv-phrase-list") do
         @hints.each do |hint|

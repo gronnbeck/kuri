@@ -127,6 +127,37 @@ class PracticeController < ApplicationController
     )
   end
 
+  def useful_phrases
+    render ::Views::Practice::UsefulPhrases.new
+  end
+
+  def useful_phrases_exercise
+    mode   = params[:mode].presence_in(%w[consuming producing]) || "consuming"
+    phrases = build_useful_phrases
+    idx    = rand(phrases.length)
+    render ::Views::Practice::UsefulPhrasesExercise.new(
+      mode: mode, phrase: phrases[idx], phrase_index: idx, answer: nil, result: nil
+    )
+  end
+
+  def check_useful_phrase
+    mode    = params[:mode].presence_in(%w[consuming producing]) || "consuming"
+    phrases = build_useful_phrases
+    idx     = params[:phrase_index].to_i
+    phrase  = phrases[idx]
+    answer  = params[:answer].to_s.strip
+    result  = UsefulPhraseChecker.call(
+      mode:      mode,
+      context:   phrase[:context],
+      phrase_jp: phrase[:jp],
+      phrase_en: phrase[:en],
+      answer:    answer
+    )
+    render ::Views::Practice::UsefulPhrasesExercise.new(
+      mode: mode, phrase: phrase, phrase_index: idx, answer: answer, result: result
+    )
+  end
+
   def micro_sentences
     render ::Views::Practice::MicroSentences.new
   end
@@ -192,5 +223,13 @@ class PracticeController < ApplicationController
       answer: answer,
       result: result
     )
+  end
+
+  private
+
+  def build_useful_phrases
+    Views::Practice::DailyConversations::THEMES.flat_map do |_key, theme|
+      theme[:phrases].map { |p| { context: theme[:name], jp: p[:jp], en: p[:en] } }
+    end
   end
 end

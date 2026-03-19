@@ -797,3 +797,16 @@ body {
   color: #666;
   margin-top: 0.2rem;
 }
+
+.conv-sidebar-summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+.conv-sidebar-summary::-webkit-details-marker { display: none; }
+
+details.conv-sidebar-section[open] .conv-sidebar-summary {
+  margin-bottom: 0.6rem;
+}
