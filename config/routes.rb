@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   post "practice/daily_conversations/exercise", to: "practice#check_daily_conversation", as: :check_daily_conversation
   get "practice/micro_sentences", to: "practice#micro_sentences"
   get "practice/word_hint", to: "practice#word_hint"
+  get "practice/jp_word_hint", to: "practice#jp_word_hint"
   get "practice/sentence_patterns/exercise", to: "practice#sentence_patterns_exercise", as: :practice_sentence_patterns_exercise
   post "practice/sentence_patterns/exercise", to: "practice#check_sentence_pattern", as: :check_sentence_pattern
   get "practice/sentence_patterns", to: "practice#sentence_patterns"

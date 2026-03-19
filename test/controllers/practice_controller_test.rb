@@ -258,6 +258,28 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_pattern, received_pattern
   end
 
+  # --- jp_word_hint ---
+
+  test "jp_word_hint returns english and furigana from translator" do
+    result = JpWordTranslator::Result.new(english: "to drink (verb)", furigana: "のむ")
+    original = JpWordTranslator.method(:call)
+    JpWordTranslator.define_singleton_method(:call) { |_| result }
+
+    get practice_jp_word_hint_path, params: { word: "飲む" }
+
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "to drink (verb)", body["english"]
+    assert_equal "のむ", body["furigana"]
+  ensure
+    JpWordTranslator.define_singleton_method(:call, original)
+  end
+
+  test "jp_word_hint returns 400 when word param is missing" do
+    get practice_jp_word_hint_path, params: { word: "" }
+    assert_response :bad_request
+  end
+
   # --- daily_conversations ---
 
   test "daily_conversations renders theme cards" do

@@ -43,10 +43,30 @@ class Views::Practice::DailyConversationExercise < ApplicationView
 
   def render_staff_bubble(turn)
     div(class: "conv-bubble conv-bubble--staff") do
-      div(class: "conv-bubble-jp") { turn["jp"] }
-      div(class: "conv-bubble-furigana") { turn["furigana"] } if turn["furigana"].present?
-      div(class: "conv-bubble-en") { turn["en"] }
+      div(
+        class: "conv-bubble-jp",
+        data: { controller: "word-hint", "word-hint-url-value": helpers.practice_jp_word_hint_path, "word-hint-display-value": "english" }
+      ) do
+        jp_segments(turn["jp"]).each do |segment|
+          if segment.match?(/\p{Han}|\p{Hiragana}|\p{Katakana}/)
+            span(
+              class: "sp-word",
+              data: { word_hint_target: "word", action: "click->word-hint#lookup", word: segment }
+            ) { segment }
+          else
+            plain segment
+          end
+        end
+      end
+      details(class: "conv-bubble-en-details") do
+        summary(class: "conv-bubble-en-toggle") { "Show English" }
+        span(class: "conv-bubble-en") { turn["en"] }
+      end
     end
+  end
+
+  def jp_segments(text)
+    text.scan(/\p{Han}+|\p{Hiragana}+|\p{Katakana}+|[a-zA-Z0-9]+|./)
   end
 
   def render_customer_bubble(turn)

@@ -2,6 +2,10 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["word"]
+  static values = {
+    url:     { type: String, default: "/practice/word_hint" },
+    display: { type: String, default: "japanese" }
+  }
 
   connect() {
     this._tooltip = null
@@ -30,10 +34,10 @@ export default class extends Controller {
     this._showLoading(wordEl)
 
     try {
-      const res = await fetch(`/practice/word_hint?word=${encodeURIComponent(word)}`)
+      const res = await fetch(`${this.urlValue}?word=${encodeURIComponent(word)}`)
       const data = await res.json()
       if (this._activeWord === wordEl) {
-        this._show(wordEl, data.japanese || data.error || "?")
+        this._show(wordEl, data[this.displayValue] || data.error || "?")
       }
     } catch {
       if (this._activeWord === wordEl) this._show(wordEl, "?")
