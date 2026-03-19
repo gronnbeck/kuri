@@ -3,7 +3,7 @@
 class ConversationPartner
   PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
 
-  Result = Struct.new(:feedback, :correct, :next_line_jp, :next_line_en, :next_line_furigana, :scenario_complete, keyword_init: true)
+  Result = Struct.new(:feedback, :correct, :next_line_jp, :next_line_en, :next_line_furigana, :scenario_complete, :hints, keyword_init: true)
 
   PROMPT = <<~PROMPT
     You are roleplaying as a Japanese %s staff member in a short conversation with a beginner Japanese learner.
@@ -22,10 +22,14 @@ class ConversationPartner
       "next_line_jp": "<your next natural Japanese line — short, polite ます/です form, beginner-friendly>",
       "next_line_en": "<English translation of your line>",
       "next_line_furigana": "<hiragana reading of your line>",
-      "scenario_complete": <true only when the interaction has naturally concluded, e.g. customer has left>
+      "scenario_complete": <true only when the interaction has naturally concluded, e.g. customer has left>,
+      "hints": [
+        { "jp": "<a Japanese phrase the learner could use to respond>", "en": "<English meaning>" },
+        { "jp": "<another option>", "en": "<English meaning>" }
+      ]
     }
 
-    Keep your lines to 1-2 sentences. Guide the learner through the scenario naturally.
+    Keep your lines to 1-2 sentences. Hints should be 2-3 natural responses the learner could give to your next line.
   PROMPT
 
   def self.call(theme_name:, scenario:, history:, user_input: nil)
@@ -59,7 +63,8 @@ class ConversationPartner
       next_line_jp:       data["next_line_jp"].to_s.strip,
       next_line_en:       data["next_line_en"].to_s.strip,
       next_line_furigana: data["next_line_furigana"].to_s.strip,
-      scenario_complete:  data["scenario_complete"] == true
+      scenario_complete:  data["scenario_complete"] == true,
+      hints:              Array(data["hints"])
     )
   rescue JSON::ParserError => e
     raise "unexpected LLM response format: #{e.message}"

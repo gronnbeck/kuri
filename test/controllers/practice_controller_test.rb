@@ -395,7 +395,7 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     SentencePatternChecker.define_singleton_method(:call, original)
   end
 
-  def with_conversation_result(next_line_jp:, next_line_en:, next_line_furigana:, feedback: nil, correct: nil, scenario_complete: false)
+  def with_conversation_result(next_line_jp:, next_line_en:, next_line_furigana:, feedback: nil, correct: nil, scenario_complete: false, hints: [])
     original = ConversationPartner.method(:call)
     result = ConversationPartner::Result.new(
       feedback:           feedback,
@@ -403,7 +403,8 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
       next_line_jp:       next_line_jp,
       next_line_en:       next_line_en,
       next_line_furigana: next_line_furigana,
-      scenario_complete:  scenario_complete
+      scenario_complete:  scenario_complete,
+      hints:              hints
     )
     ConversationPartner.define_singleton_method(:call) { |**_| result }
     yield

@@ -1,40 +1,57 @@
 # frozen_string_literal: true
 
 class Views::Practice::DailyConversationExercise < ApplicationView
-  def initialize(theme_key:, theme:, history:, current_staff_line:, scenario_complete:)
-    @theme_key        = theme_key
-    @theme            = theme
-    @history          = history
+  def initialize(theme_key:, theme:, history:, current_staff_line:, hints:, scenario_complete:)
+    @theme_key          = theme_key
+    @theme              = theme
+    @history            = history
     @current_staff_line = current_staff_line
+    @hints              = hints || []
     @scenario_complete  = scenario_complete
   end
 
   def view_template
-    div(class: "page-header") do
-      h1 { "#{@theme[:emoji]} #{@theme[:name]}" }
-      link_to "← Exit", helpers.practice_daily_conversations_path, class: "button button--secondary"
-    end
-
-    p(class: "conv-scenario") { @theme[:description] }
-
-    div(class: "conv-thread") do
-      @history.each do |turn|
-        if turn["role"] == "staff"
-          render_staff_bubble(turn)
-        else
-          render_customer_bubble(turn)
+    div(data: { controller: "toggle" }) do
+      div(class: "page-header") do
+        h1 { "#{@theme[:emoji]} #{@theme[:name]}" }
+        div(class: "header-actions") do
+          button(
+            type: "button",
+            class: "button button--secondary",
+            data: { action: "toggle#toggle" }
+          ) { "📚 Phrases & Hints" }
+          link_to "← Exit", helpers.practice_daily_conversations_path, class: "button button--secondary"
         end
       end
 
-      if @scenario_complete
-        div(class: "conv-complete") do
-          div(class: "conv-complete-icon") { "✓" }
-          div(class: "conv-complete-text") { "Conversation complete!" }
-          link_to "Try another scenario", helpers.practice_daily_conversations_path, class: "button"
+      div(class: "conv-layout") do
+        div(class: "conv-main") do
+          div(class: "conv-thread") do
+            @history.each do |turn|
+              if turn["role"] == "staff"
+                render_staff_bubble(turn)
+              else
+                render_customer_bubble(turn)
+              end
+            end
+
+            if @scenario_complete
+              div(class: "conv-complete") do
+                div(class: "conv-complete-icon") { "✓" }
+                div(class: "conv-complete-text") { "Conversation complete!" }
+                link_to "Try another scenario", helpers.practice_daily_conversations_path, class: "button"
+              end
+            elsif @current_staff_line
+              render_staff_bubble(@current_staff_line)
+              render_input_form
+            end
+          end
         end
-      elsif @current_staff_line
-        render_staff_bubble(@current_staff_line)
-        render_input_form
+
+        div(class: "conv-sidebar hidden", data: { toggle_target: "content" }) do
+          render_phrases_section
+          render_hints_section if @hints.any?
+        end
       end
     end
   end
@@ -63,10 +80,6 @@ class Views::Practice::DailyConversationExercise < ApplicationView
         span(class: "conv-bubble-en") { turn["en"] }
       end
     end
-  end
-
-  def jp_segments(text)
-    text.scan(/\p{Han}+|\p{Hiragana}+|\p{Katakana}+|[a-zA-Z0-9]+|./)
   end
 
   def render_customer_bubble(turn)
@@ -104,5 +117,38 @@ class Views::Practice::DailyConversationExercise < ApplicationView
         button(type: "submit", class: "button") { "Send" }
       end
     end
+  end
+
+  def render_phrases_section
+    div(class: "conv-sidebar-section") do
+      h3(class: "conv-sidebar-title") { "Useful Phrases" }
+      div(class: "conv-phrase-list") do
+        @theme[:phrases].each do |phrase|
+          div(class: "conv-phrase") do
+            span(class: "conv-phrase-jp") { phrase[:jp] }
+            span(class: "conv-phrase-en") { phrase[:en] }
+          end
+        end
+      end
+    end
+  end
+
+  def render_hints_section
+    div(class: "conv-sidebar-section conv-sidebar-section--hints") do
+      h3(class: "conv-sidebar-title") { "Hints" }
+      p(class: "conv-sidebar-subtitle") { "Phrases you could use right now:" }
+      div(class: "conv-phrase-list") do
+        @hints.each do |hint|
+          div(class: "conv-phrase") do
+            span(class: "conv-phrase-jp") { hint["jp"] }
+            span(class: "conv-phrase-en") { hint["en"] }
+          end
+        end
+      end
+    end
+  end
+
+  def jp_segments(text)
+    text.scan(/\p{Han}+|\p{Hiragana}+|\p{Katakana}+|[a-zA-Z0-9]+|./)
   end
 end

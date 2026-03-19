@@ -83,6 +83,7 @@ class PracticeController < ApplicationController
       theme:              theme,
       history:            [],
       current_staff_line: { "jp" => result.next_line_jp, "en" => result.next_line_en, "furigana" => result.next_line_furigana },
+      hints:              result.hints,
       scenario_complete:  result.scenario_complete
     )
   end
@@ -121,6 +122,7 @@ class PracticeController < ApplicationController
       theme:              theme,
       history:            new_history,
       current_staff_line: result.scenario_complete ? nil : { "jp" => result.next_line_jp, "en" => result.next_line_en, "furigana" => result.next_line_furigana },
+      hints:              result.hints,
       scenario_complete:  result.scenario_complete
     )
   end
