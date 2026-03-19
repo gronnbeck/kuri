@@ -19,6 +19,9 @@ Rails.application.routes.draw do
   post "practice/guided_translation/generate", to: "practice#generate_translation_sentence", as: :generate_translation_sentence
   get "practice/guided_translation/exercise", to: "practice#guided_translation_exercise", as: :guided_translation_exercise
   post "practice/guided_translation/exercise", to: "practice#check_guided_translation", as: :check_guided_translation
+  get "practice/daily_conversations", to: "practice#daily_conversations", as: :practice_daily_conversations
+  get "practice/daily_conversations/exercise", to: "practice#daily_conversations_exercise", as: :daily_conversations_exercise
+  post "practice/daily_conversations/exercise", to: "practice#check_daily_conversation", as: :check_daily_conversation
   get "practice/micro_sentences", to: "practice#micro_sentences"
   get "practice/word_hint", to: "practice#word_hint"
   get "practice/sentence_patterns/exercise", to: "practice#sentence_patterns_exercise", as: :practice_sentence_patterns_exercise

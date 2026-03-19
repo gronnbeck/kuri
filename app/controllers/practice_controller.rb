@@ -68,6 +68,63 @@ class PracticeController < ApplicationController
     redirect_to practice_guided_translation_path, alert: e.message
   end
 
+  def daily_conversations
+    render ::Views::Practice::DailyConversations.new
+  end
+
+  def daily_conversations_exercise
+    theme_key = params[:theme].to_s
+    theme = Views::Practice::DailyConversations::THEMES[theme_key]
+    return redirect_to practice_daily_conversations_path, alert: "Unknown theme." unless theme
+
+    result = ConversationPartner.call(theme_name: theme[:name], scenario: theme[:scenario], history: [])
+    render ::Views::Practice::DailyConversationExercise.new(
+      theme_key:          theme_key,
+      theme:              theme,
+      history:            [],
+      current_staff_line: { "jp" => result.next_line_jp, "en" => result.next_line_en, "furigana" => result.next_line_furigana },
+      scenario_complete:  result.scenario_complete
+    )
+  end
+
+  def check_daily_conversation
+    theme_key = params[:theme_key].to_s
+    theme = Views::Practice::DailyConversations::THEMES[theme_key]
+    return redirect_to practice_daily_conversations_path, alert: "Unknown theme." unless theme
+
+    history    = JSON.parse(params[:history].to_s.presence || "[]") rescue []
+    user_input = params[:answer].to_s.strip
+
+    history_with_staff = history + [ {
+      "role"     => "staff",
+      "jp"       => params[:current_staff_line_jp].to_s,
+      "en"       => params[:current_staff_line_en].to_s,
+      "furigana" => params[:current_staff_line_furigana].to_s
+    } ]
+
+    result = ConversationPartner.call(
+      theme_name: theme[:name],
+      scenario:   theme[:scenario],
+      history:    history_with_staff,
+      user_input: user_input
+    )
+
+    new_history = history_with_staff + [ {
+      "role"     => "customer",
+      "jp"       => user_input,
+      "feedback" => result.feedback,
+      "correct"  => result.correct
+    } ]
+
+    render ::Views::Practice::DailyConversationExercise.new(
+      theme_key:          theme_key,
+      theme:              theme,
+      history:            new_history,
+      current_staff_line: result.scenario_complete ? nil : { "jp" => result.next_line_jp, "en" => result.next_line_en, "furigana" => result.next_line_furigana },
+      scenario_complete:  result.scenario_complete
+    )
+  end
+
   def micro_sentences
     render ::Views::Practice::MicroSentences.new
   end

@@ -620,3 +620,103 @@ body {
   border: 5px solid transparent;
   border-bottom-color: #1a1a1a;
 }
+
+/* --- Daily Conversations --- */
+
+.conv-scenario {
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.conv-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 640px;
+}
+
+.conv-bubble {
+  max-width: 80%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.conv-bubble--staff {
+  align-self: flex-start;
+  background: #f0f4ff;
+  border: 1px solid #c7d7f8;
+  border-bottom-left-radius: 3px;
+}
+
+.conv-bubble--customer {
+  align-self: flex-end;
+  background: #e8f7ed;
+  border: 1px solid #b2dfc0;
+  border-bottom-right-radius: 3px;
+}
+
+.conv-bubble-jp {
+  font-size: 1.15rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.conv-bubble-furigana {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.15rem;
+}
+
+.conv-bubble-en {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.conv-feedback {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  align-self: flex-end;
+  max-width: 80%;
+}
+
+.conv-feedback--correct {
+  background: #d4edda;
+  color: #155724;
+}
+
+.conv-feedback--incorrect {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.conv-form {
+  margin-top: 1rem;
+  max-width: 640px;
+}
+
+.conv-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  background: #f0faf4;
+  border: 1px solid #b2dfc0;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.conv-complete-icon {
+  font-size: 2rem;
+  color: #2d7a4f;
+}
+
+.conv-complete-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d7a4f;
+}

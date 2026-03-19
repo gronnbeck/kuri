@@ -27,6 +27,12 @@ class Views::Practice::Index < ApplicationView
       difficulty: :medium
     },
     {
+      title: "Daily Conversations",
+      description: "Practice back-and-forth Japanese conversations in real settings like restaurants, cafes, and convenience stores.",
+      path_helper: :practice_daily_conversations_path,
+      difficulty: :medium
+    },
+    {
       title: "Word Guess",
       description: "Describe a word from your deck without saying it. Test your vocabulary recall.",
       path_helper: :practice_word_guess_path,

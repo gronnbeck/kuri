@@ -167,8 +167,9 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
   test "index renders exercise cards" do
     get practice_path
     assert_response :success
-    assert_select ".exercise-card", 5
+    assert_select ".exercise-card", 6
     assert_select ".exercise-card", text: /Sentence Patterns/
+    assert_select ".exercise-card", text: /Daily Conversations/
     assert_select ".exercise-card", text: /Word Guess/
   end
 
@@ -257,6 +258,106 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_pattern, received_pattern
   end
 
+  # --- daily_conversations ---
+
+  test "daily_conversations renders theme cards" do
+    get practice_daily_conversations_path
+    assert_response :success
+    assert_select ".exercise-card", 6
+    assert_select ".exercise-card", text: /Restaurant/
+    assert_select ".exercise-card", text: /Convenience Store/
+  end
+
+  test "daily_conversations_exercise starts conversation with opening staff line" do
+    with_conversation_result(next_line_jp: "いらっしゃいませ！", next_line_en: "Welcome!", next_line_furigana: "いらっしゃいませ") do
+      get daily_conversations_exercise_path, params: { theme: "restaurant" }
+    end
+
+    assert_response :success
+    assert_select ".conv-bubble--staff"
+    assert_select "textarea[name='answer']"
+    assert_select "input[name='theme_key']"
+    assert_select "input[name='history']"
+  end
+
+  test "daily_conversations_exercise redirects on unknown theme" do
+    get daily_conversations_exercise_path, params: { theme: "unknown" }
+    assert_redirected_to practice_daily_conversations_path
+  end
+
+  test "check_daily_conversation shows customer bubble and next staff line" do
+    history = [ { "role" => "staff", "jp" => "いらっしゃいませ！", "en" => "Welcome!", "furigana" => "いらっしゃいませ" } ]
+    with_conversation_result(
+      feedback: "Great!",
+      correct: true,
+      next_line_jp: "何名様ですか？",
+      next_line_en: "How many people?",
+      next_line_furigana: "なんめいさまですか"
+    ) do
+      post check_daily_conversation_path, params: {
+        theme_key: "restaurant",
+        history: history.to_json,
+        current_staff_line_jp: "いらっしゃいませ！",
+        current_staff_line_en: "Welcome!",
+        current_staff_line_furigana: "いらっしゃいませ",
+        answer: "一人です。"
+      }
+    end
+
+    assert_response :success
+    assert_select ".conv-bubble--customer"
+    assert_select ".conv-feedback--correct", text: /Great!/
+    assert_select ".conv-bubble--staff"
+    assert_select "textarea[name='answer']"
+  end
+
+  test "check_daily_conversation shows incorrect feedback without advancing scenario" do
+    history = []
+    with_conversation_result(
+      feedback: "Try using です form.",
+      correct: false,
+      next_line_jp: "何名様ですか？",
+      next_line_en: "How many people?",
+      next_line_furigana: "なんめいさまですか"
+    ) do
+      post check_daily_conversation_path, params: {
+        theme_key: "restaurant",
+        history: history.to_json,
+        current_staff_line_jp: "いらっしゃいませ！",
+        current_staff_line_en: "Welcome!",
+        current_staff_line_furigana: "いらっしゃいませ",
+        answer: "one person"
+      }
+    end
+
+    assert_response :success
+    assert_select ".conv-feedback--incorrect", text: /Try using/
+  end
+
+  test "check_daily_conversation shows completion when scenario ends" do
+    with_conversation_result(
+      feedback: "Perfect!",
+      correct: true,
+      next_line_jp: "",
+      next_line_en: "",
+      next_line_furigana: "",
+      scenario_complete: true
+    ) do
+      post check_daily_conversation_path, params: {
+        theme_key: "restaurant",
+        history: [].to_json,
+        current_staff_line_jp: "ありがとうございました！",
+        current_staff_line_en: "Thank you very much!",
+        current_staff_line_furigana: "ありがとうございました",
+        answer: "ありがとうございます。"
+      }
+    end
+
+    assert_response :success
+    assert_select ".conv-complete"
+    assert_select "textarea[name='answer']", count: 0
+  end
+
   private
 
   # Temporarily replaces SentencePatternChecker.call for the duration of the block.
@@ -270,5 +371,21 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
     yield
   ensure
     SentencePatternChecker.define_singleton_method(:call, original)
+  end
+
+  def with_conversation_result(next_line_jp:, next_line_en:, next_line_furigana:, feedback: nil, correct: nil, scenario_complete: false)
+    original = ConversationPartner.method(:call)
+    result = ConversationPartner::Result.new(
+      feedback:           feedback,
+      correct:            correct,
+      next_line_jp:       next_line_jp,
+      next_line_en:       next_line_en,
+      next_line_furigana: next_line_furigana,
+      scenario_complete:  scenario_complete
+    )
+    ConversationPartner.define_singleton_method(:call) { |**_| result }
+    yield
+  ensure
+    ConversationPartner.define_singleton_method(:call, original)
   end
 end
