@@ -152,7 +152,8 @@ class PracticeController < ApplicationController
     return render json: { error: "missing word" }, status: :bad_request if word.blank?
 
     result = JpWordTranslator.call(word)
-    render json: { english: result.english, furigana: result.furigana }
+    text = result.furigana.present? ? "#{result.english} (#{result.furigana})" : result.english
+    render json: { english: text, furigana: result.furigana }
   rescue => e
     render json: { error: e.message }, status: :unprocessable_entity
   end

@@ -269,7 +269,7 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     body = response.parsed_body
-    assert_equal "to drink (verb)", body["english"]
+    assert_equal "to drink (verb) (のむ)", body["english"]
     assert_equal "のむ", body["furigana"]
   ensure
     JpWordTranslator.define_singleton_method(:call, original)
