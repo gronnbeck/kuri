@@ -28,6 +28,7 @@ class Views::Practice::SentenceTransformation < ApplicationView
   def view_template
     div(class: "page-header") do
       h1 { "Sentence Transformation" }
+      link_to "Skip →", helpers.practice_sentence_transformation_path, class: "button button--secondary"
       link_to "← All Exercises", helpers.practice_path, class: "button button--secondary"
     end
 
