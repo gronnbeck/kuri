@@ -8,24 +8,33 @@ class Views::Practice::UsefulPhrases < ApplicationView
     end
 
     p(class: "exercise-instructions") do
-      "Practice phrases from real Japanese contexts. Choose your mode."
+      "Choose a scenario and a mode to start practicing."
     end
 
-    div(class: "exercise-grid") do
-      a(href: helpers.useful_phrases_exercise_path(mode: "consuming"), class: "exercise-card") do
-        div(class: "exercise-card-header") do
-          h2(class: "exercise-card-title") { "Consuming" }
-          span(class: "difficulty-badge difficulty-badge--easy") { "Easy" }
-        end
-        p(class: "exercise-card-desc") { "You're shown a Japanese phrase — translate it into English." }
+    div(class: "up-scenario-list") do
+      Views::Practice::DailyConversations::THEMES.each do |key, theme|
+        render_scenario_row(theme[:emoji], theme[:name], key)
       end
+      render_scenario_row("🎲", "Mix", "mix")
+    end
+  end
 
-      a(href: helpers.useful_phrases_exercise_path(mode: "producing"), class: "exercise-card") do
-        div(class: "exercise-card-header") do
-          h2(class: "exercise-card-title") { "Producing" }
-          span(class: "difficulty-badge difficulty-badge--medium") { "Medium" }
-        end
-        p(class: "exercise-card-desc") { "You're shown an English phrase — write it in Japanese." }
+  private
+
+  def render_scenario_row(emoji, name, context_key)
+    div(class: "up-scenario-row") do
+      div(class: "up-scenario-name") { "#{emoji} #{name}" }
+      div(class: "up-scenario-actions") do
+        link_to(
+          "Consuming",
+          helpers.useful_phrases_exercise_path(mode: "consuming", context: context_key),
+          class: "button button--secondary"
+        )
+        link_to(
+          "Producing",
+          helpers.useful_phrases_exercise_path(mode: "producing", context: context_key),
+          class: "button"
+        )
       end
     end
   end

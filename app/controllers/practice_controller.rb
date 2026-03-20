@@ -132,17 +132,19 @@ class PracticeController < ApplicationController
   end
 
   def useful_phrases_exercise
-    mode   = params[:mode].presence_in(%w[consuming producing]) || "consuming"
-    phrases = build_useful_phrases
-    idx    = rand(phrases.length)
+    mode    = params[:mode].presence_in(%w[consuming producing]) || "consuming"
+    context = params[:context].to_s.presence || "mix"
+    phrases = build_useful_phrases(context)
+    idx     = rand(phrases.length)
     render ::Views::Practice::UsefulPhrasesExercise.new(
-      mode: mode, phrase: phrases[idx], phrase_index: idx, answer: nil, result: nil
+      mode: mode, context: context, phrase: phrases[idx], phrase_index: idx, answer: nil, result: nil
     )
   end
 
   def check_useful_phrase
     mode    = params[:mode].presence_in(%w[consuming producing]) || "consuming"
-    phrases = build_useful_phrases
+    context = params[:context].to_s.presence || "mix"
+    phrases = build_useful_phrases(context)
     idx     = params[:phrase_index].to_i
     phrase  = phrases[idx]
     answer  = params[:answer].to_s.strip
@@ -154,7 +156,7 @@ class PracticeController < ApplicationController
       answer:    answer
     )
     render ::Views::Practice::UsefulPhrasesExercise.new(
-      mode: mode, phrase: phrase, phrase_index: idx, answer: answer, result: result
+      mode: mode, context: context, phrase: phrase, phrase_index: idx, answer: answer, result: result
     )
   end
 
@@ -227,9 +229,11 @@ class PracticeController < ApplicationController
 
   private
 
-  def build_useful_phrases
-    Views::Practice::DailyConversations::THEMES.flat_map do |_key, theme|
+  def build_useful_phrases(context = "mix")
+    all = Views::Practice::DailyConversations::THEMES.flat_map do |_key, theme|
       theme[:phrases].map { |p| { context: theme[:name], jp: p[:jp], en: p[:en] } }
     end
+    return all if context == "mix"
+    all.select { |p| p[:context].downcase.tr(" ", "_") == context.downcase }
   end
 end

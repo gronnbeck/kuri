@@ -810,3 +810,32 @@ body {
 details.conv-sidebar-section[open] .conv-sidebar-summary {
   margin-bottom: 0.6rem;
 }
+
+/* --- Useful Phrases scenario picker --- */
+
+.up-scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 540px;
+}
+
+.up-scenario-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.up-scenario-name {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.up-scenario-actions {
+  display: flex;
+  gap: 0.5rem;
+}

@@ -261,40 +261,45 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
 
   # --- useful_phrases ---
 
-  test "useful_phrases renders mode selection" do
+  test "useful_phrases renders scenario picker with all themes and mix" do
     get practice_useful_phrases_path
     assert_response :success
-    assert_select ".exercise-card", text: /Consuming/
-    assert_select ".exercise-card", text: /Producing/
+    assert_select ".up-scenario-row", 7  # 6 themes + Mix
+    assert_select ".up-scenario-row", text: /Restaurant/
+    assert_select ".up-scenario-row", text: /Mix/
+    assert_select "a", text: /Consuming/
+    assert_select "a", text: /Producing/
   end
 
   test "useful_phrases_exercise renders phrase and form for consuming mode" do
-    get useful_phrases_exercise_path, params: { mode: "consuming" }
+    get useful_phrases_exercise_path, params: { mode: "consuming", context: "mix" }
     assert_response :success
     assert_select ".sp-pattern-formula"
     assert_select "textarea[name='answer']"
     assert_select "input[name='mode'][value='consuming']"
+    assert_select "input[name='context'][value='mix']"
     assert_select "input[name='phrase_index']"
     assert_select "button[type='submit']", text: /Check/
   end
 
   test "useful_phrases_exercise renders english prompt for producing mode" do
-    get useful_phrases_exercise_path, params: { mode: "producing" }
+    get useful_phrases_exercise_path, params: { mode: "producing", context: "restaurant" }
     assert_response :success
     assert_select ".sp-english"
     assert_select "textarea[name='answer']"
     assert_select "input[name='mode'][value='producing']"
+    assert_select "input[name='context'][value='restaurant']"
   end
 
   test "useful_phrases_exercise defaults to consuming for unknown mode" do
-    get useful_phrases_exercise_path, params: { mode: "unknown" }
+    get useful_phrases_exercise_path, params: { mode: "unknown", context: "mix" }
     assert_response :success
     assert_select "input[name='mode'][value='consuming']"
   end
 
   test "check_useful_phrase shows correct result and countdown" do
     with_phrase_result(correct: true, feedback: "Perfect!") do
-      post check_useful_phrase_path, params: { mode: "consuming", phrase_index: 0, answer: "Excuse me" }
+      post check_useful_phrase_path, params: { mode: "consuming", context: "restaurant", phrase_index: 0, answer: "Excuse me" }
     end
     assert_response :success
     assert_select ".sp-result--correct"
@@ -303,7 +308,7 @@ class PracticeControllerTest < ActionDispatch::IntegrationTest
 
   test "check_useful_phrase shows incorrect result with correct answer revealed" do
     with_phrase_result(correct: false, feedback: "Try again!") do
-      post check_useful_phrase_path, params: { mode: "producing", phrase_index: 0, answer: "wrong" }
+      post check_useful_phrase_path, params: { mode: "producing", context: "mix", phrase_index: 0, answer: "wrong" }
     end
     assert_response :success
     assert_select ".sp-result--incorrect"

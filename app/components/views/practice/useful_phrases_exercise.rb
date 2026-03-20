@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 class Views::Practice::UsefulPhrasesExercise < ApplicationView
-  def initialize(mode:, phrase:, phrase_index:, answer:, result:)
+  def initialize(mode:, context:, phrase:, phrase_index:, answer:, result:)
     @mode         = mode
+    @context      = context
     @phrase       = phrase
     @phrase_index = phrase_index
     @answer       = answer
@@ -13,7 +14,7 @@ class Views::Practice::UsefulPhrasesExercise < ApplicationView
     div(class: "page-header") do
       h1 { @mode == "consuming" ? "Useful Phrases — Consuming" : "Useful Phrases — Producing" }
       div(class: "header-actions") do
-        link_to "Skip →", helpers.useful_phrases_exercise_path(mode: @mode), class: "button button--secondary"
+        link_to "Skip →", helpers.useful_phrases_exercise_path(mode: @mode, context: @context), class: "button button--secondary"
         link_to "← All Exercises", helpers.practice_useful_phrases_path, class: "button button--secondary"
       end
     end
@@ -78,6 +79,7 @@ class Views::Practice::UsefulPhrasesExercise < ApplicationView
     form(action: helpers.check_useful_phrase_path, method: "post", data: { turbo: "false" }) do
       input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
       input(type: "hidden", name: "mode", value: @mode)
+      input(type: "hidden", name: "context", value: @context)
       input(type: "hidden", name: "phrase_index", value: @phrase_index)
       textarea(
         class: "practice-input",
@@ -93,7 +95,7 @@ class Views::Practice::UsefulPhrasesExercise < ApplicationView
   end
 
   def render_auto_advance_script
-    next_url = helpers.useful_phrases_exercise_path(mode: @mode)
+    next_url = helpers.useful_phrases_exercise_path(mode: @mode, context: @context)
     script do
       raw Phlex::SGML::SafeValue.new(<<~JS)
         (function() {
