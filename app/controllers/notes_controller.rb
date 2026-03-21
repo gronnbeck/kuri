@@ -4,10 +4,10 @@ class NotesController < ApplicationController
   PER_PAGE = 20
 
   def index
-    page = [params.fetch(:page, 1).to_i, 1].max
+    page = [ params.fetch(:page, 1).to_i, 1 ].max
     scope = Note.order(created_at: :desc)
-    total_pages = [(scope.count / PER_PAGE.to_f).ceil, 1].max
-    page = [page, total_pages].min
+    total_pages = [ (scope.count / PER_PAGE.to_f).ceil, 1 ].max
+    page = [ page, total_pages ].min
     notes = scope.offset((page - 1) * PER_PAGE).limit(PER_PAGE)
     render ::Views::Notes::Index.new(notes: notes, page: page, total_pages: total_pages)
   end

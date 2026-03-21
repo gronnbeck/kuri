@@ -28,7 +28,7 @@ class Views::Practice::WordGuess < ApplicationView
         end
       end
 
-      form(action: helpers.practice_word_guess_path, method: "post", data: {turbo: "false"}) do
+      form(action: helpers.practice_word_guess_path, method: "post", data: { turbo: "false" }) do
         input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
         input(type: "hidden", name: "note_id", value: @note.anki_id)
         textarea(
@@ -36,7 +36,7 @@ class Views::Practice::WordGuess < ApplicationView
           name: "description",
           placeholder: "Describe the word without using it...",
           rows: 4
-        ) {}
+        ) { }
         button(type: "submit", class: "button") { "Guess" }
       end
     end
