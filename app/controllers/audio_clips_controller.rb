@@ -2,9 +2,13 @@
 
 class AudioClipsController < ApplicationController
   def index
+    render ::Views::AudioClips::Index.new
+  end
+
+  def generate
     @actors    = Actor.order(:created_at)
     @sentences = Sentence.includes(clips: [ :actor, { audio_attachment: :blob } ]).order(created_at: :desc)
-    render ::Views::AudioClips::Index.new(actors: @actors, sentences: @sentences)
+    render ::Views::AudioClips::Generate.new(actors: @actors, sentences: @sentences)
   end
 
   def create
@@ -12,15 +16,15 @@ class AudioClipsController < ApplicationController
     actor_id = params[:actor_id].to_s.strip
 
     if text.blank? || actor_id.blank?
-      redirect_to audio_clips_path, alert: "Text and actor are required."
+      redirect_to audio_clips_generate_path, alert: "Text and actor are required."
       return
     end
 
     actor = Actor.find(actor_id)
     Clip.find_or_generate(sentence_text: text, actor: actor)
-    redirect_to audio_clips_path, notice: "Clip ready."
+    redirect_to audio_clips_generate_path, notice: "Clip ready."
   rescue => e
-    redirect_to audio_clips_path, alert: "Failed to generate clip: #{e.message}"
+    redirect_to audio_clips_generate_path, alert: "Failed to generate clip: #{e.message}"
   end
 
   def audio

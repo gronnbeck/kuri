@@ -31,11 +31,10 @@ Rails.application.routes.draw do
   get "practice/sentence_patterns/exercise", to: "practice#sentence_patterns_exercise", as: :practice_sentence_patterns_exercise
   post "practice/sentence_patterns/exercise", to: "practice#check_sentence_pattern", as: :check_sentence_pattern
   get "practice/sentence_patterns", to: "practice#sentence_patterns"
-  resources :audio_clips, only: [ :index, :create ] do
-    member do
-      get :audio
-    end
-  end
+  get "audio_clips", to: "audio_clips#index"
+  get "audio_clips/generate", to: "audio_clips#generate", as: :audio_clips_generate
+  post "audio_clips/generate", to: "audio_clips#create", as: :audio_clips_create
+  get "audio_clips/:id/audio", to: "audio_clips#audio", as: :audio_audio_clip
   get "settings", to: "settings#index"
   get "settings/listen", to: "settings#listen", as: :settings_listen
   scope "/settings/listen", as: "settings_listen" do
