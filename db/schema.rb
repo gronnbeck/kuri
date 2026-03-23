@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_21_100226) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_23_055105) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -46,6 +46,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_100226) do
     t.string "voice_id", null: false
   end
 
+  create_table "anki_conversation_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "deck_name"
+    t.json "field_mappings", default: {}
+    t.string "note_type"
+    t.datetime "updated_at", null: false
+    t.string "url", default: "http://localhost:8765"
+  end
+
+  create_table "anki_exports", force: :cascade do |t|
+    t.bigint "anki_note_id"
+    t.integer "conversation_exercise_id", null: false
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_exercise_id"], name: "index_anki_exports_on_conversation_exercise_id"
+  end
+
   create_table "clips", force: :cascade do |t|
     t.integer "actor_id", null: false
     t.datetime "created_at", null: false
@@ -54,6 +73,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_100226) do
     t.index ["actor_id", "sentence_id"], name: "index_clips_on_actor_id_and_sentence_id", unique: true
     t.index ["actor_id"], name: "index_clips_on_actor_id"
     t.index ["sentence_id"], name: "index_clips_on_sentence_id"
+  end
+
+  create_table "contexts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "conversation_audios", force: :cascade do |t|
+    t.integer "conversation_exercise_id", null: false
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_exercise_id"], name: "index_conversation_audios_on_conversation_exercise_id"
+  end
+
+  create_table "conversation_exercises", force: :cascade do |t|
+    t.string "anki_status", default: "not_added", null: false
+    t.integer "context_id"
+    t.datetime "created_at", null: false
+    t.string "difficulty_level", default: "n5", null: false
+    t.text "notes"
+    t.text "request_en"
+    t.text "request_jp", null: false
+    t.text "response_en"
+    t.text "response_jp", null: false
+    t.datetime "updated_at", null: false
+    t.index ["context_id"], name: "index_conversation_exercises_on_context_id"
   end
 
   create_table "decks", force: :cascade do |t|
@@ -102,7 +149,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_100226) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "anki_exports", "conversation_exercises"
   add_foreign_key "clips", "actors"
   add_foreign_key "clips", "sentences"
+  add_foreign_key "conversation_audios", "conversation_exercises"
+  add_foreign_key "conversation_exercises", "contexts"
   add_foreign_key "notes", "decks"
 end

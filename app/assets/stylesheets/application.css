@@ -1005,3 +1005,271 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
   color: #888;
   margin-top: 0.2rem;
 }
+
+/* --- Badges --- */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  background: #e5e5e5;
+  color: #444;
+}
+
+.badge--context {
+  background: #e0eaff;
+  color: #2a4db5;
+}
+
+.badge--neutral {
+  background: #e5e5e5;
+  color: #555;
+}
+
+.badge--success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge--error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* --- Page header actions --- */
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.button--ghost {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
+}
+
+.button--ghost:hover {
+  background: #f5f5f5;
+}
+
+.button--danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+}
+
+/* --- Form helpers --- */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Conversation Exercise card --- */
+.ce-meta {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.ce-card {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.ce-side {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ce-side:first-child {
+  background: #f8f9ff;
+}
+
+.ce-side:last-child {
+  background: #f9fdf9;
+}
+
+.ce-divider {
+  width: 1px;
+  background: #e0e0e0;
+}
+
+.ce-side-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #aaa;
+}
+
+.ce-jp {
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: #111;
+}
+
+.ce-en {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.ce-en--hint {
+  font-style: italic;
+  color: #888;
+}
+
+.ce-notes {
+  font-size: 0.82rem;
+  color: #888;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e8e8e8;
+  line-height: 1.5;
+}
+
+/* --- Conversation exercise audio --- */
+.ce-audio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+
+.ce-audio-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  margin-bottom: 0.25rem;
+}
+
+.ce-audio-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ce-audio-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+
+.ce-audio-kind {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  width: 5rem;
+  flex-shrink: 0;
+}
+
+.ce-audio-missing {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+/* --- Conversation exercise list --- */
+.conversation-exercise-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.conversation-exercise-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.conversation-exercise-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.conversation-exercise-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.conversation-request {
+  font-size: 1rem;
+  color: #111;
+}
+
+.conversation-response {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.conversation-exercise-meta {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.conversation-exercise-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}

@@ -9,6 +9,21 @@
 #   end
 
 [
+  "Restaurant",
+  "Convenience Store",
+  "Cafe",
+  "Izakaya",
+  "Train Station",
+  "Hotel",
+  "Pharmacy",
+  "Post Office",
+  "Bank",
+  "Supermarket"
+].each do |name|
+  Context.find_or_create_by!(name: name)
+end
+
+[
   { english: "I drink water.",          japanese: "私は水を飲みます。" },
   { english: "I eat rice.",             japanese: "私はご飯を食べます。" },
   { english: "I study Japanese.",       japanese: "私は日本語を勉強します。" },

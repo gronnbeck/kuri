@@ -35,10 +35,29 @@ Rails.application.routes.draw do
   get "audio_clips/generate", to: "audio_clips#generate", as: :audio_clips_generate
   post "audio_clips/generate", to: "audio_clips#create", as: :audio_clips_create
   get "audio_clips/:id/audio", to: "audio_clips#audio", as: :audio_audio_clip
+  resources :conversation_exercises do
+    collection do
+      post :generate
+    end
+    member do
+      post :add_to_anki
+      post :generate_audio
+    end
+  end
+  get "conversation_audios/:id/audio", to: "conversation_audios#audio", as: :conversation_audio
+
   get "settings", to: "settings#index"
   get "settings/listen", to: "settings#listen", as: :settings_listen
   scope "/settings/listen", as: "settings_listen" do
     resources :actors
+    resource :conversations, only: [ :show, :update ], controller: "settings/conversations" do
+      collection do
+        get  :fetch_decks
+        get  :fetch_note_types
+        get  :fetch_fields
+        post :test_connection
+      end
+    end
   end
   resources :notes, only: [ :index, :show ]
   resources :decks, only: [ :index, :new, :create, :update, :destroy ] do
