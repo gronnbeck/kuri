@@ -25,23 +25,7 @@ class Views::Practice::SentencePatternExercise < ApplicationView
 
       div(class: "sp-exercise-prompt") do
         div(class: "sp-pattern-label") { "Translate into Japanese" }
-        div(
-          class: "sp-english",
-          data: { controller: "word-hint" }
-        ) do
-          @english.split(" ").each_with_index do |token, i|
-            plain " " if i > 0
-            bare_word = token.gsub(/\A[^a-zA-Z0-9]+|[^a-zA-Z0-9]+\z/, "")
-            span(
-              class: "sp-word",
-              data: {
-                word_hint_target: "word",
-                action: "click->word-hint#lookup",
-                word: bare_word
-              }
-            ) { token }
-          end
-        end
+        render Views::Components::WordHintText.new(text: @english)
       end
 
       if @result
@@ -61,14 +45,7 @@ class Views::Practice::SentencePatternExercise < ApplicationView
   private
 
   def render_result
-    css_class = @result.correct ? "sp-result sp-result--correct" : "sp-result sp-result--incorrect"
-    div(class: css_class) do
-      div(class: "sp-result-verdict") { @result.correct ? "Correct!" : "Not quite" }
-      div(class: "sp-result-feedback") { @result.feedback }
-      if @result.correct
-        div(class: "sp-result-countdown", id: "sp-countdown") { "Next exercise in 3..." }
-      end
-    end
+    render Views::Components::ExerciseResult.new(result: @result, countdown_label: "Next exercise in 3...")
   end
 
   def render_form
@@ -90,21 +67,9 @@ class Views::Practice::SentencePatternExercise < ApplicationView
   end
 
   def render_auto_advance_script
-    next_url = helpers.practice_sentence_patterns_exercise_path
-    script do
-      raw Phlex::SGML::SafeValue.new(<<~JS)
-        (function() {
-          var remaining = 3;
-          var el = document.getElementById('sp-countdown');
-          function tick() {
-            if (remaining <= 0) { window.location.href = '#{next_url}'; return; }
-            if (el) el.textContent = 'Next exercise in ' + remaining + '...';
-            remaining--;
-            setTimeout(tick, 1000);
-          }
-          tick();
-        })();
-      JS
-    end
+    render Views::Components::ExerciseAutoAdvance.new(
+      next_url:         helpers.practice_sentence_patterns_exercise_path,
+      countdown_prefix: "Next exercise in"
+    )
   end
 end

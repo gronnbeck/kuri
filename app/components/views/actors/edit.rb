@@ -7,15 +7,12 @@ class Views::Actors::Edit < ApplicationView
 
   def view_template
     div(class: "page-header") do
-      div(class: "breadcrumb") do
-        link_to "Settings", helpers.settings_path
-        span { " › " }
-        link_to "Listen", helpers.settings_listen_path
-        span { " › " }
-        link_to "Actors", helpers.settings_listen_actors_path
-        span { " › " }
-        span { "Edit" }
-      end
+      render Views::Components::Breadcrumb.new(items: [
+        { label: "Settings", path: helpers.settings_path },
+        { label: "Listen",   path: helpers.settings_listen_path },
+        { label: "Actors",   path: helpers.settings_listen_actors_path },
+        { label: "Edit" }
+      ])
       h1 { "Edit Actor" }
     end
 

@@ -8,14 +8,10 @@ class Views::AudioClips::Index < ApplicationView
 
     div(class: "exercise-content") do
       div(class: "exercise-section") do
-        ul(class: "settings-nav-list") do
-          li do
-            link_to helpers.audio_clips_generate_path, class: "settings-nav-item" do
-              div(class: "settings-nav-title") { "Generate Clip" }
-              div(class: "settings-nav-desc") { "Generate and replay Japanese audio clips" }
-            end
-          end
-        end
+        render Views::Components::SettingsNavList.new(items: [
+          { title: "Generate Clip",           description: "Generate and replay Japanese audio clips",                            path: helpers.audio_clips_generate_path },
+          { title: "Conversation Exercises",  description: "Author and review Japanese conversation cards, export to Anki",     path: helpers.conversation_exercises_path }
+        ])
       end
     end
   end

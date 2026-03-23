@@ -8,11 +8,10 @@ class Views::AudioClips::Generate < ApplicationView
 
   def view_template
     div(class: "page-header") do
-      div(class: "breadcrumb") do
-        link_to "Listen", helpers.audio_clips_path
-        span { " › " }
-        span { "Generate Clip" }
-      end
+      render Views::Components::Breadcrumb.new(items: [
+        { label: "Listen", path: helpers.audio_clips_path },
+        { label: "Generate Clip" }
+      ])
       h1 { "Generate Clip" }
     end
 

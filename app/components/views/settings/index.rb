@@ -8,14 +8,9 @@ class Views::Settings::Index < ApplicationView
 
     div(class: "exercise-content") do
       div(class: "exercise-section") do
-        ul(class: "settings-nav-list") do
-          li do
-            link_to helpers.settings_listen_path, class: "settings-nav-item" do
-              div(class: "settings-nav-title") { "Listen" }
-              div(class: "settings-nav-desc") { "Manage actors and voices for audio clip generation" }
-            end
-          end
-        end
+        render Views::Components::SettingsNavList.new(items: [
+          { title: "Listen", description: "Manage actors and voices for audio clip generation", path: helpers.settings_listen_path }
+        ])
       end
     end
   end

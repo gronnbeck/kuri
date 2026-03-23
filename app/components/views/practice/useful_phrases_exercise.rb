@@ -32,23 +32,7 @@ class Views::Practice::UsefulPhrasesExercise < ApplicationView
         if @mode == "consuming"
           div(class: "sp-pattern-formula") { @phrase[:jp] }
         else
-          div(
-            class: "sp-english",
-            data: { controller: "word-hint" }
-          ) do
-            @phrase[:en].split(" ").each_with_index do |token, i|
-              plain " " if i > 0
-              bare_word = token.gsub(/\A[^a-zA-Z0-9]+|[^a-zA-Z0-9]+\z/, "")
-              span(
-                class: "sp-word",
-                data: {
-                  word_hint_target: "word",
-                  action: "click->word-hint#lookup",
-                  word: bare_word
-                }
-              ) { token }
-            end
-          end
+          render Views::Components::WordHintText.new(text: @phrase[:en])
         end
       end
 
@@ -62,17 +46,8 @@ class Views::Practice::UsefulPhrasesExercise < ApplicationView
   private
 
   def render_result
-    css = @result.correct ? "sp-result sp-result--correct" : "sp-result sp-result--incorrect"
-    div(class: css) do
-      div(class: "sp-result-verdict")  { @result.correct ? "Correct!" : "Not quite" }
-      div(class: "sp-result-feedback") { @result.feedback }
-      unless @result.correct
-        div(class: "sp-result-answer") do
-          @mode == "consuming" ? @phrase[:en] : @phrase[:jp]
-        end
-      end
-      div(class: "sp-result-countdown", id: "sp-countdown") { "Next in 3..." } if @result.correct
-    end
+    answer = @result.correct ? nil : (@mode == "consuming" ? @phrase[:en] : @phrase[:jp])
+    render Views::Components::ExerciseResult.new(result: @result, answer: answer)
   end
 
   def render_form
@@ -95,21 +70,8 @@ class Views::Practice::UsefulPhrasesExercise < ApplicationView
   end
 
   def render_auto_advance_script
-    next_url = helpers.useful_phrases_exercise_path(mode: @mode, context: @context)
-    script do
-      raw Phlex::SGML::SafeValue.new(<<~JS)
-        (function() {
-          var remaining = 3;
-          var el = document.getElementById('sp-countdown');
-          function tick() {
-            if (remaining <= 0) { window.location.href = '#{next_url}'; return; }
-            if (el) el.textContent = 'Next in ' + remaining + '...';
-            remaining--;
-            setTimeout(tick, 1000);
-          }
-          tick();
-        })();
-      JS
-    end
+    render Views::Components::ExerciseAutoAdvance.new(
+      next_url: helpers.useful_phrases_exercise_path(mode: @mode, context: @context)
+    )
   end
 end

@@ -7,13 +7,11 @@ class Views::Actors::Index < ApplicationView
 
   def view_template
     div(class: "page-header") do
-      div(class: "breadcrumb") do
-        link_to "Settings", helpers.settings_path
-        span { " › " }
-        link_to "Listen", helpers.settings_listen_path
-        span { " › " }
-        span { "Actors" }
-      end
+      render Views::Components::Breadcrumb.new(items: [
+        { label: "Settings", path: helpers.settings_path },
+        { label: "Listen",   path: helpers.settings_listen_path },
+        { label: "Actors" }
+      ])
       h1 { "Actors" }
     end
 
