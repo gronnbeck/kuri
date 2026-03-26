@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 class ConversationExercisesController < ApplicationController
-  before_action :set_exercise, only: [ :show, :edit, :update, :destroy, :add_to_anki, :generate_audio ]
+  before_action :set_exercise, only: [ :show, :edit, :update, :destroy, :add_to_anki, :generate_audio, :archive, :improve, :generate_readings ]
 
   def index
-    @exercises = ConversationExercise.includes(:context).order(created_at: :desc)
-    render Views::ConversationExercises::Index.new(exercises: @exercises)
+    scope = params[:archived] == "1" ? ConversationExercise.where(archived: true) : ConversationExercise.where(archived: false)
+    @exercises = scope.includes(:context).order(created_at: :desc)
+    render Views::ConversationExercises::Index.new(exercises: @exercises, show_archived: params[:archived] == "1")
   end
 
   def new
@@ -30,8 +31,10 @@ class ConversationExercisesController < ApplicationController
       context:          context,
       request_jp:       result.request_jp,
       request_en:       result.request_en,
+      request_reading:  result.request_reading,
       response_jp:      result.response_jp,
       response_en:      result.response_en,
+      response_reading: result.response_reading,
       notes:            result.notes,
       difficulty_level: difficulty
     )
@@ -41,7 +44,9 @@ class ConversationExercisesController < ApplicationController
   end
 
   def show
-    render Views::ConversationExercises::Show.new(exercise: @exercise)
+    setting = AnkiConversationSetting.current
+    anki_configured = setting.persisted? && setting.deck_name.present? && setting.note_type.present?
+    render Views::ConversationExercises::Show.new(exercise: @exercise, anki_configured: anki_configured)
   end
 
   def edit
@@ -86,6 +91,43 @@ class ConversationExercisesController < ApplicationController
     redirect_to conversation_exercise_path(@exercise), alert: "Audio generation failed: #{e.message}"
   end
 
+  def archive
+    @exercise.update!(archived: !@exercise.archived)
+    label = @exercise.archived? ? "archived" : "restored"
+    redirect_to conversation_exercises_path, notice: "Exercise #{label}."
+  end
+
+  def improve
+    feedbacks = @exercise.conversation_feedbacks.order(:created_at)
+    if feedbacks.empty?
+      redirect_to conversation_exercise_path(@exercise), alert: "Add at least one feedback note before improving."
+      return
+    end
+
+    result = ConversationExerciseGenerator.improve(exercise: @exercise, feedbacks: feedbacks)
+    @exercise.update!(
+      request_jp:       result.request_jp,
+      request_en:       result.request_en,
+      request_reading:  result.request_reading,
+      response_jp:      result.response_jp,
+      response_en:      result.response_en,
+      response_reading: result.response_reading,
+      notes:            result.notes,
+      anki_status:      :not_added
+    )
+    redirect_to conversation_exercise_path(@exercise), notice: "Exercise improved."
+  rescue => e
+    redirect_to conversation_exercise_path(@exercise), alert: "Improvement failed: #{e.message}"
+  end
+
+  def generate_readings
+    result = ConversationExerciseGenerator.readings_for(exercise: @exercise)
+    @exercise.update!(request_reading: result[:request_reading], response_reading: result[:response_reading])
+    redirect_to conversation_exercise_path(@exercise), notice: "Readings generated."
+  rescue => e
+    redirect_to conversation_exercise_path(@exercise), alert: "Reading generation failed: #{e.message}"
+  end
+
   def add_to_anki
     setting = AnkiConversationSetting.current
     unless setting.persisted? && setting.deck_name.present? && setting.note_type.present?
@@ -93,9 +135,10 @@ class ConversationExercisesController < ApplicationController
       return
     end
 
+    re_add = @exercise.added?
     exporter = AnkiConnect::ConversationExporter.new(setting)
     exporter.export(@exercise)
-    redirect_to conversation_exercise_path(@exercise), notice: "Added to Anki."
+    redirect_to conversation_exercise_path(@exercise), notice: re_add ? "Re-added to Anki." : "Added to Anki."
   rescue => e
     redirect_to conversation_exercise_path(@exercise), alert: "Anki export failed: #{e.message}"
   end
@@ -107,6 +150,6 @@ class ConversationExercisesController < ApplicationController
   end
 
   def exercise_params
-    params.expect(conversation_exercise: [ :context_id, :request_jp, :request_en, :response_jp, :response_en, :notes, :difficulty_level ])
+    params.expect(conversation_exercise: [ :context_id, :request_jp, :request_en, :request_reading, :response_jp, :response_en, :response_reading, :notes, :difficulty_level ])
   end
 end

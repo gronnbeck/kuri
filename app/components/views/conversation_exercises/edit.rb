@@ -60,6 +60,17 @@ class Views::ConversationExercises::Edit < ApplicationView
             end
 
             div(class: "form-group") do
+              label(for: "request_reading") { "Request (Reading — hiragana)" }
+              textarea(
+                name: "conversation_exercise[request_reading]",
+                id: "request_reading",
+                class: "form-input",
+                rows: "2",
+                placeholder: "ひらがなのみ"
+              ) { @exercise.request_reading.to_s }
+            end
+
+            div(class: "form-group") do
               label(for: "request_en") { "Request (English)" }
               textarea(
                 name: "conversation_exercise[request_en]",
@@ -79,6 +90,17 @@ class Views::ConversationExercises::Edit < ApplicationView
                 class: "form-input",
                 rows: "2"
               ) { @exercise.response_jp }
+            end
+
+            div(class: "form-group") do
+              label(for: "response_reading") { "Response (Reading — hiragana)" }
+              textarea(
+                name: "conversation_exercise[response_reading]",
+                id: "response_reading",
+                class: "form-input",
+                rows: "2",
+                placeholder: "ひらがなのみ"
+              ) { @exercise.response_reading.to_s }
             end
 
             div(class: "form-group") do

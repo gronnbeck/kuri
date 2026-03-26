@@ -3,6 +3,7 @@
 class ConversationExercise < ApplicationRecord
   belongs_to :context, optional: true
 
+  has_many :conversation_feedbacks, dependent: :destroy
   has_many :conversation_audios, dependent: :destroy
   has_one :request_audio, -> { where(kind: "request") }, class_name: "ConversationAudio"
   has_one :response_audio, -> { where(kind: "response") }, class_name: "ConversationAudio"

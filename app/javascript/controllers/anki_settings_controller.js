@@ -1,6 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  // Cached Anki note type fields fetched from AnkiConnect
+  ankiFields = null
+
+  connect() {
+    // Auto-fetch fields on load if note type is already set
+    const noteType = this.element.querySelector("#note_type")?.value?.trim()
+    if (noteType) this.loadAnkiFields(noteType)
+  }
+
   async testConnection() {
     const url = this.element.querySelector("#url").value
     const status = this.element.querySelector("#connection-status")
@@ -43,28 +52,94 @@ export default class extends Controller {
       if (data.error) { list.textContent = "✗ " + data.error; return }
       list.innerHTML = data.note_types.map(t => `<a href="#" class="tag" data-type="${t}">${t}</a>`).join(" ")
       list.querySelectorAll("[data-type]").forEach(a => {
-        a.addEventListener("click", e => { e.preventDefault(); field.value = a.dataset.type; list.textContent = "" })
+        a.addEventListener("click", e => {
+          e.preventDefault()
+          field.value = a.dataset.type
+          list.textContent = ""
+          this.loadAnkiFields(a.dataset.type)
+        })
       })
     } catch {
       list.textContent = "✗ Request failed"
     }
   }
 
+  // Fetch note type fields and apply them to all mapping rows
+  async loadAnkiFields(noteType) {
+    const url = this.element.querySelector("#url")?.value
+    try {
+      const params = new URLSearchParams({ note_type: noteType })
+      if (url) params.set("url", url)
+      const res = await fetch(this.fetchFieldsPath + "?" + params)
+      const data = await res.json()
+      if (data.error || !data.fields) return
+      this.ankiFields = data.fields
+      this.applyFieldValidation()
+    } catch {
+      // AnkiConnect unreachable — leave inputs as-is
+    }
+  }
+
+  // Validate all existing text inputs against known Anki fields
+  applyFieldValidation() {
+    if (!this.ankiFields) return
+    this.element.querySelectorAll("[data-role='field-name']").forEach(input => {
+      this.validateFieldInput(input)
+      input.addEventListener("input", () => this.validateFieldInput(input), { once: false })
+    })
+  }
+
+  validateFieldInput(input) {
+    const value = input.value.trim()
+    let hint = input.nextElementSibling?.classList.contains("field-name-hint")
+      ? input.nextElementSibling
+      : null
+
+    if (!hint) {
+      hint = document.createElement("span")
+      hint.className = "field-name-hint"
+      input.parentNode.insertBefore(hint, input.nextSibling)
+    }
+
+    if (!value) {
+      hint.textContent = ""
+    } else if (this.ankiFields.includes(value)) {
+      hint.textContent = "✓"
+      hint.className = "field-name-hint field-name-hint--ok"
+    } else {
+      hint.textContent = "✗ not in note type"
+      hint.className = "field-name-hint field-name-hint--error"
+    }
+  }
+
   addMappingRow() {
     const container = this.element.querySelector("#field-mappings")
+    // Remove the empty-state placeholder if present
+    const empty = container.querySelector(".field-mappings-empty")
+    if (empty) empty.remove()
+
+    const sourceFields = ["request","request_reading","request_audio","response","response_reading","response_audio","context","difficulty","notes"]
     const row = document.createElement("div")
     row.className = "field-mapping-row"
+    row.dataset.controller = "mapping-row"
+
+    // If we have Anki fields cached, use a select; otherwise a text input
+    const ankiFieldInput = this.ankiFields
+      ? `<select class="form-select" data-role="field-name" data-action="change->mapping-row#updateNameFromSelect" data-mapping-row-target="ankiSelect">
+           <option value="">— Anki field —</option>
+           ${this.ankiFields.map(f => `<option value="${f}">${f}</option>`).join("")}
+         </select>`
+      : `<input type="text" class="form-input" placeholder="Anki field name"
+                data-role="field-name" data-action="input->mapping-row#updateName">`
+
     row.innerHTML = `
-      <input type="text" class="form-input" placeholder="Anki field name" data-role="field-name" data-action="input->anki-settings#updateRowName">
+      ${ankiFieldInput}
       <span> → </span>
-      <select class="form-select" data-role="field-source" name="">
-        <option value="">— select —</option>
-        ${["request","response","context","difficulty","notes"].map(f => `<option value="${f}">${f}</option>`).join("")}
+      <select class="form-select" data-role="field-source" data-mapping-row-target="select" name="">
+        <option value="">— source field —</option>
+        ${sourceFields.map(f => `<option value="${f}">${f}</option>`).join("")}
       </select>
     `
-    row.querySelector("[data-role='field-name']").addEventListener("input", e => {
-      row.querySelector("[data-role='field-source']").name = `anki_conversation_setting[field_mappings][${e.target.value}]`
-    })
     container.appendChild(row)
   }
 
@@ -72,15 +147,8 @@ export default class extends Controller {
     return document.querySelector("meta[name='csrf-token']")?.content
   }
 
-  get testConnectionPath() {
-    return "/settings/listen/conversations/test_connection"
-  }
-
-  get fetchDecksPath() {
-    return "/settings/listen/conversations/fetch_decks"
-  }
-
-  get fetchNoteTypesPath() {
-    return "/settings/listen/conversations/fetch_note_types"
-  }
+  get testConnectionPath() { return "/settings/listen/conversations/test_connection" }
+  get fetchDecksPath()     { return "/settings/listen/conversations/fetch_decks" }
+  get fetchNoteTypesPath() { return "/settings/listen/conversations/fetch_note_types" }
+  get fetchFieldsPath()    { return "/settings/listen/conversations/fetch_fields" }
 }

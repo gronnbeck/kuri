@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_055105) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_25_054021) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -91,16 +91,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_055105) do
 
   create_table "conversation_exercises", force: :cascade do |t|
     t.string "anki_status", default: "not_added", null: false
+    t.boolean "archived", default: false, null: false
     t.integer "context_id"
     t.datetime "created_at", null: false
     t.string "difficulty_level", default: "n5", null: false
     t.text "notes"
     t.text "request_en"
     t.text "request_jp", null: false
+    t.text "request_reading"
     t.text "response_en"
     t.text "response_jp", null: false
+    t.text "response_reading"
     t.datetime "updated_at", null: false
     t.index ["context_id"], name: "index_conversation_exercises_on_context_id"
+  end
+
+  create_table "conversation_feedbacks", force: :cascade do |t|
+    t.text "body"
+    t.integer "conversation_exercise_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_exercise_id"], name: "index_conversation_feedbacks_on_conversation_exercise_id"
   end
 
   create_table "decks", force: :cascade do |t|
@@ -154,5 +165,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_055105) do
   add_foreign_key "clips", "sentences"
   add_foreign_key "conversation_audios", "conversation_exercises"
   add_foreign_key "conversation_exercises", "contexts"
+  add_foreign_key "conversation_feedbacks", "conversation_exercises"
   add_foreign_key "notes", "decks"
 end

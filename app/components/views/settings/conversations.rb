@@ -1,7 +1,19 @@
 # frozen_string_literal: true
 
 class Views::Settings::Conversations < ApplicationView
-  EXERCISE_FIELDS = %w[request response context difficulty notes].freeze
+  EXERCISE_FIELDS = %w[request request_reading request_audio response response_reading response_audio context difficulty notes].freeze
+
+  FIELD_DESCRIPTIONS = {
+    "request"          => [ "Japanese",  "What is said to the learner (front of card)" ],
+    "request_reading"  => [ "Hiragana",  "Hiragana-only reading of the request" ],
+    "request_audio"    => [ "Audio",     "TTS audio clip of the request (embedded via AnkiConnect)" ],
+    "response"         => [ "Japanese",  "What the learner should say back (back of card)" ],
+    "response_reading" => [ "Hiragana",  "Hiragana-only reading of the response" ],
+    "response_audio"   => [ "Audio",     "TTS audio clip of the response (embedded via AnkiConnect)" ],
+    "context"          => [ "Text",      "Scenario name, e.g. Restaurant" ],
+    "difficulty"       => [ "Text",      "JLPT level, e.g. N4" ],
+    "notes"            => [ "Text",      "Optional grammar or vocabulary notes" ]
+  }.freeze
 
   def initialize(setting:)
     @setting = setting
@@ -89,10 +101,39 @@ class Views::Settings::Conversations < ApplicationView
             end
           end
 
-          h2(class: "mt-2") { "Field Mappings" }
+          h2(class: "mt-2") { "Available source fields" }
           p(class: "exercise-instructions") {
-            "Map each Anki field name to one of: #{EXERCISE_FIELDS.join(", ")}"
+            "These are the fields Kuri can populate on each Anki note."
           }
+          table(class: "field-ref-table") do
+            thead do
+              tr do
+                th { "Field" }
+                th { "Type" }
+                th { "Description" }
+              end
+            end
+            tbody do
+              FIELD_DESCRIPTIONS.each do |name, (type, desc)|
+                tr do
+                  td { code { name } }
+                  td(class: type == "Audio" ? "field-ref-type field-ref-type--audio" : "field-ref-type") { type }
+                  td(class: "field-ref-desc") { desc }
+                end
+              end
+            end
+          end
+
+          h2(class: "mt-2") { "Field Mappings" }
+          div(class: "field-mappings-description") do
+            p(class: "exercise-instructions") {
+              "Map your Anki note type's field names to the source fields above."
+            }
+            p(class: "exercise-instructions field-mappings-hint") {
+              "Leave empty to use source field names directly — ideal when your Anki fields are named the same as the source fields (e.g. " \
+              "\"request\", \"response_reading\", \"difficulty\")."
+            }
+          end
 
           div(id: "field-mappings") do
             mappings = @setting.field_mappings || {}
@@ -101,7 +142,9 @@ class Views::Settings::Conversations < ApplicationView
                 render_mapping_row(anki_field, source)
               end
             else
-              render_mapping_row("", "")
+              div(class: "field-mappings-empty") do
+                span { "No mappings — all source fields will be sent using their default names." }
+              end
             end
           end
 

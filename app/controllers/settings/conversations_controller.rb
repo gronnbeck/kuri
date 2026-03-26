@@ -57,7 +57,11 @@ module Settings
     end
 
     def setting_params
-      params.expect(anki_conversation_setting: [ :url, :deck_name, :note_type, { field_mappings: {} } ])
+      permitted = params.expect(anki_conversation_setting: [ :url, :deck_name, :note_type, { field_mappings: {} } ])
+      permitted[:field_mappings] ||= {}
+      # Discard entries with a blank Anki field name (incomplete rows)
+      permitted[:field_mappings].reject! { |k, _| k.blank? }
+      permitted
     end
   end
 end

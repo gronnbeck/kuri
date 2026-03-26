@@ -42,7 +42,11 @@ Rails.application.routes.draw do
     member do
       post :add_to_anki
       post :generate_audio
+      post :archive
+      post :improve
+      post :generate_readings
     end
+    resources :conversation_feedbacks, only: [ :create, :destroy ]
   end
   get "conversation_audios/:id/audio", to: "conversation_audios#audio", as: :conversation_audio
 

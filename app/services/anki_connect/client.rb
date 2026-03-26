@@ -34,13 +34,15 @@ module AnkiConnect
       request("notesInfo", notes: ids)
     end
 
-    def add_note(deck:, note_type:, fields:, tags: [])
-      result = request("addNote", note: {
+    def add_note(deck:, note_type:, fields:, audio: [], tags: [])
+      note = {
         deckName:  deck,
         modelName: note_type,
         fields:    fields,
         tags:      tags
-      })
+      }
+      note[:audio] = audio if audio.any?
+      result = request("addNote", note: note)
       raise "AnkiConnect rejected note: #{result.inspect}" if result.nil?
       result
     end

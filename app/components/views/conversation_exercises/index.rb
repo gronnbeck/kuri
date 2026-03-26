@@ -5,8 +5,9 @@ class Views::ConversationExercises::Index < ApplicationView
   ANKI_LABELS = { "not_added" => "Not added", "added" => "Added", "failed" => "Failed" }.freeze
   ANKI_CLASSES = { "not_added" => "badge--neutral", "added" => "badge--success", "failed" => "badge--error" }.freeze
 
-  def initialize(exercises:)
-    @exercises = exercises
+  def initialize(exercises:, show_archived: false)
+    @exercises     = exercises
+    @show_archived = show_archived
   end
 
   def view_template
@@ -17,7 +18,12 @@ class Views::ConversationExercises::Index < ApplicationView
       ])
       div(class: "page-header-actions") do
         h1 { "Conversation Exercises" }
-        link_to "New Exercise", helpers.new_conversation_exercise_path, class: "button"
+        if @show_archived
+          link_to "← Active", helpers.conversation_exercises_path, class: "button button--ghost"
+        else
+          link_to "Archived", helpers.conversation_exercises_path(archived: 1), class: "button button--ghost"
+          link_to "New Exercise", helpers.new_conversation_exercise_path, class: "button"
+        end
       end
     end
 
@@ -34,24 +40,26 @@ class Views::ConversationExercises::Index < ApplicationView
           ul(class: "conversation-exercise-list") do
             @exercises.each do |ex|
               li(class: "conversation-exercise-item") do
-                div(class: "conversation-exercise-main") do
-                  div(class: "conversation-exercise-text") do
-                    div(class: "jp conversation-request") { ex.request_jp }
-                    div(class: "jp conversation-response") { ex.response_jp }
-                  end
+                a(href: helpers.conversation_exercise_path(ex), class: "conversation-exercise-link", aria_label: "View exercise")
+                div(class: "conversation-exercise-text") do
+                  div(class: "jp conversation-request") { ex.request_jp }
+                  div(class: "jp conversation-response") { ex.response_jp }
+                end
+                div(class: "conversation-exercise-footer") do
                   div(class: "conversation-exercise-meta") do
                     render Views::Components::Badge.new(label: DIFFICULTY_LABELS[ex.difficulty_level] || ex.difficulty_level)
                     render Views::Components::Badge.new(label: ex.context.name, variant: "context") if ex.context
                     render Views::Components::Badge.new(label: ANKI_LABELS[ex.anki_status], variant: ANKI_CLASSES[ex.anki_status]&.delete_prefix("badge--"))
                   end
-                end
-                div(class: "conversation-exercise-actions") do
-                  link_to "View", helpers.conversation_exercise_path(ex), class: "button button--small"
-                  link_to "Edit", helpers.edit_conversation_exercise_path(ex), class: "button button--small button--ghost"
-                  button_to "Delete", helpers.conversation_exercise_path(ex),
-                    method: :delete,
-                    data: { confirm: "Delete this exercise?" },
-                    class: "button button--small button--danger"
+                  div(class: "conversation-exercise-actions") do
+                    unless @show_archived
+                      link_to "Edit", helpers.edit_conversation_exercise_path(ex), class: "button button--small button--ghost"
+                    end
+                    button_to @show_archived ? "Restore" : "Archive",
+                      helpers.archive_conversation_exercise_path(ex),
+                      method: :post,
+                      class: "button button--small button--ghost"
+                  end
                 end
               end
             end
