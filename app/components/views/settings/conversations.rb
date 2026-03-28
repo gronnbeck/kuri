@@ -54,7 +54,7 @@ class Views::Settings::Conversations < ApplicationView
                 data: { action: "click->anki-settings#testConnection" }
               ) { "Test connection" }
             end
-            div(id: "connection-status", class: "form-hint") {}
+            div(id: "connection-status", class: "form-hint") { }
           end
 
           h2(class: "mt-2") { "Deck" }
@@ -77,7 +77,7 @@ class Views::Settings::Conversations < ApplicationView
                   data: { action: "click->anki-settings#fetchDecks" }
                 ) { "Fetch decks" }
               end
-              div(id: "decks-list", class: "form-hint") {}
+              div(id: "decks-list", class: "form-hint") { }
             end
 
             div(class: "form-group") do
@@ -97,7 +97,7 @@ class Views::Settings::Conversations < ApplicationView
                   data: { action: "click->anki-settings#fetchNoteTypes" }
                 ) { "Fetch types" }
               end
-              div(id: "note-types-list", class: "form-hint") {}
+              div(id: "note-types-list", class: "form-hint") { }
             end
           end
 
