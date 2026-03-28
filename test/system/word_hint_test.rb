@@ -12,7 +12,7 @@ class WordHintTest < ApplicationSystemTestCase
   end
 
   test "clicking a word shows a tooltip with the japanese translation" do
-    with_translator("コーヒー") do
+    with_translator(WordTranslator::Result.new(japanese: "コーヒー", furigana: "こーひー", description: "coffee")) do
       visit practice_sentence_patterns_exercise_path
 
       word = find(".sp-word", match: :first)
@@ -28,7 +28,7 @@ class WordHintTest < ApplicationSystemTestCase
   end
 
   test "clicking elsewhere dismisses the tooltip" do
-    with_translator("水") do
+    with_translator(WordTranslator::Result.new(japanese: "水", furigana: "みず", description: "water")) do
       visit practice_sentence_patterns_exercise_path
 
       find(".sp-word", match: :first).click
@@ -40,7 +40,7 @@ class WordHintTest < ApplicationSystemTestCase
   end
 
   test "clicking the same word again dismisses the tooltip" do
-    with_translator("水") do
+    with_translator(WordTranslator::Result.new(japanese: "水", furigana: "みず", description: "water")) do
       visit practice_sentence_patterns_exercise_path
 
       word = find(".sp-word", match: :first)
@@ -60,15 +60,15 @@ class WordHintTest < ApplicationSystemTestCase
     original = WordTranslator.method(:call)
     WordTranslator.define_singleton_method(:call) do |_|
       blocker.lock   # waits until test releases it
-      "犬"
+      WordTranslator::Result.new(japanese: "犬", furigana: "いぬ", description: "dog")
     end
 
     visit practice_sentence_patterns_exercise_path
     find(".sp-word", match: :first).click
-    assert_selector ".word-hint-tooltip", text: "…"
+    assert_selector ".word-hint-tooltip", text: "···"
 
     blocker.unlock
-    assert_selector ".word-hint-tooltip", text: "犬"
+    assert_selector ".word-hint-tooltip", text: "犬", wait: 3
   ensure
     blocker.unlock rescue nil
     WordTranslator.define_singleton_method(:call, original)

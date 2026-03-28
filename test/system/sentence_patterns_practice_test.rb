@@ -83,8 +83,8 @@ class SentencePatternsPracticeTest < ApplicationSystemTestCase
       assert_selector ".sp-result--correct"
       # Countdown is 3 seconds; wait for auto-advance with buffer
       assert_current_path practice_sentence_patterns_exercise_path, wait: 5
-      assert_selector ".sp-pattern-formula"
-      assert_selector "textarea[name='answer']"
+      assert_selector ".sp-pattern-formula", wait: 5
+      assert_selector "textarea[name='answer']", wait: 5
     end
   end
 
