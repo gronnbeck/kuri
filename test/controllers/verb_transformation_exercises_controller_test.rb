@@ -120,6 +120,60 @@ class VerbTransformationExercisesControllerTest < ActionDispatch::IntegrationTes
     assert_select "*", text: /て-form/
   end
 
+  # --- generate_audio ---
+
+  test "generate_audio for verb picks a random actor and attaches audio" do
+    actor    = Actor.create!(voice_id: "voice-abc")
+    exercise = VerbTransformationExercise.create!(verb_jp: "食べる", answer_jp: "食べて", target_form: "te_form", difficulty_level: "n5")
+
+    with_tts("FAKEMP3") do
+      post generate_audio_verb_transformation_exercise_path(exercise, kind: "verb")
+    end
+
+    va = exercise.verb_audios.find_by!(kind: "verb")
+    assert va.audio.attached?
+    assert_equal actor.id, va.actor_id
+    assert_redirected_to verb_transformation_exercise_path(exercise)
+  end
+
+  test "generate_audio for answer reuses the same actor as the verb audio" do
+    a1 = Actor.create!(voice_id: "voice-1")
+    a2 = Actor.create!(voice_id: "voice-2")
+    exercise = VerbTransformationExercise.create!(verb_jp: "食べる", answer_jp: "食べて", target_form: "te_form", difficulty_level: "n5")
+
+    # Pre-create verb audio attributed to a1
+    verb_va = exercise.verb_audios.create!(kind: "verb", actor: a1)
+    _ = a2  # ensure a second actor exists but should not be chosen
+
+    with_tts("FAKEMP3") do
+      post generate_audio_verb_transformation_exercise_path(exercise, kind: "answer")
+    end
+
+    answer_va = exercise.verb_audios.find_by!(kind: "answer")
+    assert_equal a1.id, answer_va.actor_id
+  end
+
+  test "generate_audio for answer picks random actor when no verb audio exists yet" do
+    actor    = Actor.create!(voice_id: "voice-abc")
+    exercise = VerbTransformationExercise.create!(verb_jp: "食べる", answer_jp: "食べて", target_form: "te_form", difficulty_level: "n5")
+
+    with_tts("FAKEMP3") do
+      post generate_audio_verb_transformation_exercise_path(exercise, kind: "answer")
+    end
+
+    answer_va = exercise.verb_audios.find_by!(kind: "answer")
+    assert_equal actor.id, answer_va.actor_id
+  end
+
+  test "generate_audio redirects with alert when no actors exist" do
+    exercise = VerbTransformationExercise.create!(verb_jp: "食べる", answer_jp: "食べて", target_form: "te_form", difficulty_level: "n5")
+
+    post generate_audio_verb_transformation_exercise_path(exercise, kind: "verb")
+
+    assert_redirected_to verb_transformation_exercise_path(exercise)
+    assert_match "actor", flash[:alert]
+  end
+
   # --- archive ---
 
   test "archive toggles archived flag and redirects to index" do
@@ -147,5 +201,13 @@ class VerbTransformationExercisesControllerTest < ActionDispatch::IntegrationTes
     yield
   ensure
     VerbTransformationExerciseGenerator.define_singleton_method(:call, original)
+  end
+
+  def with_tts(data)
+    original = ElevenLabsTts.method(:call)
+    ElevenLabsTts.define_singleton_method(:call) { |*| data }
+    yield
+  ensure
+    ElevenLabsTts.define_singleton_method(:call, original)
   end
 end

@@ -67,8 +67,13 @@ class VerbTransformationExercisesController < ApplicationController
   end
 
   def generate_audio
-    kind  = params[:kind].to_s
-    actor = Actor.order(:created_at).first
+    kind = params[:kind].to_s
+
+    # For verb exercises the same actor should voice both sides.
+    other_kind  = kind == "verb" ? "answer" : "verb"
+    other_audio = @exercise.verb_audios.find_by(kind: other_kind)
+    actor = other_audio&.actor || Actor.pick_random
+
     unless actor
       redirect_to verb_transformation_exercise_path(@exercise), alert: "Add an actor in Settings → Listen → Actors first."
       return
@@ -76,6 +81,7 @@ class VerbTransformationExercisesController < ApplicationController
 
     text = kind == "verb" ? @exercise.verb_jp : @exercise.answer_jp
     va   = @exercise.verb_audios.find_or_initialize_by(kind: kind)
+    va.actor = actor
     va.save! unless va.persisted?
 
     audio_data = ElevenLabsTts.call(text, voice_id: actor.voice_id)
@@ -84,6 +90,7 @@ class VerbTransformationExercisesController < ApplicationController
       filename:     "verb_#{@exercise.id}_#{kind}.mp3",
       content_type: "audio/mpeg"
     )
+    va.update_columns(actor_id: actor.id)
     redirect_to verb_transformation_exercise_path(@exercise), notice: "#{kind.capitalize} audio generated."
   rescue => e
     redirect_to verb_transformation_exercise_path(@exercise), alert: "Audio generation failed: #{e.message}"

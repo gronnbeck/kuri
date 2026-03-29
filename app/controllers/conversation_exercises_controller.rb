@@ -69,8 +69,13 @@ class ConversationExercisesController < ApplicationController
   end
 
   def generate_audio
-    kind   = params[:kind].to_s
-    actor  = Actor.order(:created_at).first
+    kind = params[:kind].to_s
+
+    # For conversations we try to use a different actor for the other side.
+    other_kind  = kind == "request" ? "response" : "request"
+    other_audio = @exercise.conversation_audios.find_by(kind: other_kind)
+    actor = Actor.pick_random(exclude_id: other_audio&.actor_id)
+
     unless actor
       redirect_to conversation_exercise_path(@exercise), alert: "Add an actor in Settings → Listen → Actors first."
       return
@@ -78,6 +83,7 @@ class ConversationExercisesController < ApplicationController
 
     text = kind == "request" ? @exercise.request_jp : @exercise.response_jp
     ca   = @exercise.conversation_audios.find_or_initialize_by(kind: kind)
+    ca.actor = actor
     ca.save! unless ca.persisted?
 
     audio_data = ElevenLabsTts.call(text, voice_id: actor.voice_id)
@@ -86,6 +92,7 @@ class ConversationExercisesController < ApplicationController
       filename:     "conv_#{@exercise.id}_#{kind}.mp3",
       content_type: "audio/mpeg"
     )
+    ca.update_columns(actor_id: actor.id)
     redirect_to conversation_exercise_path(@exercise), notice: "#{kind.capitalize} audio generated."
   rescue => e
     redirect_to conversation_exercise_path(@exercise), alert: "Audio generation failed: #{e.message}"

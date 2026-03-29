@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_054418) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_29_054606) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -92,10 +92,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_054418) do
   end
 
   create_table "conversation_audios", force: :cascade do |t|
+    t.integer "actor_id"
     t.integer "conversation_exercise_id", null: false
     t.datetime "created_at", null: false
     t.string "kind", null: false
     t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_conversation_audios_on_actor_id"
     t.index ["conversation_exercise_id"], name: "index_conversation_audios_on_conversation_exercise_id"
   end
 
@@ -169,10 +171,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_054418) do
   end
 
   create_table "verb_audios", force: :cascade do |t|
+    t.integer "actor_id"
     t.datetime "created_at", null: false
     t.string "kind", null: false
     t.datetime "updated_at", null: false
     t.integer "verb_transformation_exercise_id", null: false
+    t.index ["actor_id"], name: "index_verb_audios_on_actor_id"
     t.index ["verb_transformation_exercise_id"], name: "index_verb_audios_on_verb_transformation_exercise_id"
   end
 
@@ -215,11 +219,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_054418) do
   add_foreign_key "anki_exports", "conversation_exercises"
   add_foreign_key "clips", "actors"
   add_foreign_key "clips", "sentences"
+  add_foreign_key "conversation_audios", "actors"
   add_foreign_key "conversation_audios", "conversation_exercises"
   add_foreign_key "conversation_exercises", "contexts"
   add_foreign_key "conversation_feedbacks", "conversation_exercises"
   add_foreign_key "notes", "decks"
   add_foreign_key "verb_anki_exports", "verb_transformation_exercises"
+  add_foreign_key "verb_audios", "actors"
   add_foreign_key "verb_audios", "verb_transformation_exercises"
   add_foreign_key "verb_transformation_feedbacks", "verb_transformation_exercises"
 end
