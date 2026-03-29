@@ -23,7 +23,7 @@ class VerbTransformationExerciseGenerator
     ## Rules
 
     - Choose a verb the learner is likely to encounter in daily life or textbooks at this level
-    - Use kanji appropriate for JLPT %s (avoid kanji beyond the level)
+    - Use kanji appropriate for the target JLPT level (avoid kanji beyond the level)
     - Provide hiragana-only readings for both the dictionary form and the answer
     - Keep notes brief and useful (grammar pattern, any irregularities, or usage tip) — null if nothing noteworthy
 
