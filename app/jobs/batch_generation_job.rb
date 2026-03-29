@@ -40,7 +40,10 @@ class BatchGenerationJob < ApplicationJob
     used_verbs       = []
 
     batch.batch_items.order(:id).each_with_index do |item, index|
-      scenario = scenarios[index % scenarios.size]
+      # When a context is set the model already knows where to focus, so we
+      # don't add a contradicting scenario hint.  Scenarios are only used for
+      # variety when generating without a context.
+      scenario = batch.context.nil? ? scenarios[index % scenarios.size] : nil
       generate_item(batch, item, scenario: scenario, used_requests: used_requests, used_verbs: used_verbs)
       ActionCable.server.broadcast(
         batch.stream_name,

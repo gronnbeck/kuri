@@ -53,12 +53,43 @@ class Views::VerbBatches::Show < ApplicationView
         end
 
         link_to(
-          "View generated cards →",
+          "View all cards →",
           helpers.verb_transformation_exercises_path,
           class: "button mt-2",
           data:  { batch_progress_target: "viewLink" },
           style: @batch.done? ? "" : "display:none"
         )
+      end
+
+      items = @batch.batch_items.includes(:exercise).order(:id)
+      render_items_table(items) if items.any?
+    end
+  end
+
+  private
+
+  def render_items_table(items)
+    div(class: "batch-items") do
+      h3(class: "batch-items-heading") { "Generated Cards" }
+      div(class: "batch-items-list") do
+        items.each_with_index do |item, i|
+          div(class: "batch-item batch-item--#{item.status}") do
+            span(class: "batch-item-num") { "##{i + 1}" }
+            if item.completed? && item.exercise
+              ex = item.exercise
+              div(class: "batch-item-content") do
+                span(class: "batch-item-jp") { ex.verb_jp }
+                span(class: "batch-item-en") { ex.verb_en } if ex.verb_en.present?
+                span(class: "badge badge--context") { ex.target_form_label }
+              end
+              link_to "View →", helpers.verb_transformation_exercise_path(ex), class: "button button--small button--ghost"
+            elsif item.failed?
+              span(class: "batch-item-failed") { "Failed" }
+            else
+              span(class: "batch-item-pending") { "Pending…" }
+            end
+          end
+        end
       end
     end
   end
