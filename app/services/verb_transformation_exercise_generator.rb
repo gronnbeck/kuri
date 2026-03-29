@@ -173,7 +173,12 @@ class VerbTransformationExerciseGenerator
   end
 
   def build_prompt
-    form_label = @target_form ? VerbTransformationExercise::TARGET_FORM_LABELS.fetch(@target_form, @target_form) : "any appropriate form"
+    if @target_form
+      label      = VerbTransformationExercise::TARGET_FORM_LABELS.fetch(@target_form, @target_form)
+      form_label = "#{label} (key: \"#{@target_form}\")"
+    else
+      form_label = "any appropriate form — choose the key from: #{VerbTransformationExercise::TARGET_FORMS.join(", ")}"
+    end
     if @verb.present?
       level     = @difficulty&.upcase || "appropriate"
       verb_line = @verb

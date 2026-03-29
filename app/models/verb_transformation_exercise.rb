@@ -28,13 +28,24 @@ class VerbTransformationExercise < ApplicationRecord
   has_many :verb_transformation_feedbacks, dependent: :destroy
   has_many :verb_anki_exports, dependent: :destroy
 
+  LABEL_TO_KEY = TARGET_FORM_LABELS.invert.freeze
+
   enum :difficulty_level, { n5: "n5", n4: "n4", n3: "n3", n2: "n2", n1: "n1" }
   enum :anki_status, { not_added: "not_added", added: "added", failed: "failed" }
+
+  before_validation :normalise_target_form
 
   validates :verb_jp, :answer_jp, :difficulty_level, presence: true
   validates :target_form, presence: true, inclusion: { in: TARGET_FORMS }
 
   def target_form_label
     TARGET_FORM_LABELS[target_form] || target_form
+  end
+
+  private
+
+  def normalise_target_form
+    return if target_form.blank? || TARGET_FORMS.include?(target_form)
+    self.target_form = LABEL_TO_KEY[target_form] || target_form
   end
 end
