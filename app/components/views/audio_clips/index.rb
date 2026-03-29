@@ -11,7 +11,9 @@ class Views::AudioClips::Index < ApplicationView
         render Views::Components::SettingsNavList.new(items: [
           { title: "Generate Clip",           description: "Generate and replay Japanese audio clips",                            path: helpers.audio_clips_generate_path },
           { title: "Conversation Exercises",  description: "Author and review Japanese conversation cards, export to Anki",     path: helpers.conversation_exercises_path },
-          { title: "Verb Exercises",          description: "Drill Japanese verb conjugation, export to Anki",                      path: helpers.verb_transformation_exercises_path }
+          { title: "Verb Exercises",          description: "Drill Japanese verb conjugation, export to Anki",                      path: helpers.verb_transformation_exercises_path },
+          { title: "Conversation Batches",    description: "Bulk-generate conversation cards in the background",                    path: helpers.conversation_batches_path },
+          { title: "Verb Batches",            description: "Bulk-generate verb conjugation cards in the background",                path: helpers.verb_batches_path }
         ])
       end
     end

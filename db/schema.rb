@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_054606) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_29_154660) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -73,6 +73,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_054606) do
     t.string "note_type"
     t.datetime "updated_at", null: false
     t.string "url", default: "http://localhost:8765"
+  end
+
+  create_table "batch_items", force: :cascade do |t|
+    t.integer "attempt_count", default: 0, null: false
+    t.integer "batch_id", null: false
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.integer "exercise_id"
+    t.string "exercise_type"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["batch_id"], name: "index_batch_items_on_batch_id"
+    t.index ["exercise_type", "exercise_id"], name: "index_batch_items_on_exercise_type_and_exercise_id"
+  end
+
+  create_table "batches", force: :cascade do |t|
+    t.integer "completed_count", default: 0, null: false
+    t.integer "context_id"
+    t.datetime "created_at", null: false
+    t.string "difficulty", null: false
+    t.integer "failed_count", default: 0, null: false
+    t.string "kind", null: false
+    t.string "status", default: "pending", null: false
+    t.string "target_form"
+    t.integer "total", null: false
+    t.datetime "updated_at", null: false
+    t.index ["context_id"], name: "index_batches_on_context_id"
   end
 
   create_table "clips", force: :cascade do |t|
@@ -217,6 +244,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_054606) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "anki_exports", "conversation_exercises"
+  add_foreign_key "batch_items", "batches"
+  add_foreign_key "batches", "contexts"
   add_foreign_key "clips", "actors"
   add_foreign_key "clips", "sentences"
   add_foreign_key "conversation_audios", "actors"

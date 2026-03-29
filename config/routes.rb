@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount ActionCable.server => "/cable"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -64,6 +65,9 @@ Rails.application.routes.draw do
     resources :verb_transformation_feedbacks, only: [ :create, :destroy ]
   end
   get "verb_audios/:id/audio", to: "verb_audios#audio", as: :verb_audio
+
+  resources :conversation_batches, only: [ :index, :new, :create, :show ]
+  resources :verb_batches,         only: [ :index, :new, :create, :show ]
 
   get "settings", to: "settings#index"
   get "settings/listen", to: "settings#listen", as: :settings_listen
