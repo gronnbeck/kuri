@@ -18,7 +18,8 @@
   "Pharmacy",
   "Post Office",
   "Bank",
-  "Supermarket"
+  "Supermarket",
+  "Travel"
 ].each do |name|
   Context.find_or_create_by!(name: name)
 end
