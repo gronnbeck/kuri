@@ -79,7 +79,11 @@ class VerbTransformationExercisesController < ApplicationController
       return
     end
 
-    text = kind == "verb" ? @exercise.verb_jp : @exercise.answer_jp
+    text = if kind == "verb"
+      @exercise.verb_reading.presence || @exercise.verb_jp
+    else
+      @exercise.answer_reading.presence || @exercise.answer_jp
+    end
     va   = @exercise.verb_audios.find_or_initialize_by(kind: kind)
     va.actor = actor
     va.save! unless va.persisted?

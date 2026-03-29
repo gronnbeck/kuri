@@ -81,7 +81,11 @@ class ConversationExercisesController < ApplicationController
       return
     end
 
-    text = kind == "request" ? @exercise.request_jp : @exercise.response_jp
+    text = if kind == "request"
+      @exercise.request_reading.presence || @exercise.request_jp
+    else
+      @exercise.response_reading.presence || @exercise.response_jp
+    end
     ca   = @exercise.conversation_audios.find_or_initialize_by(kind: kind)
     ca.actor = actor
     ca.save! unless ca.persisted?
