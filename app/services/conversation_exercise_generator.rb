@@ -39,6 +39,12 @@ class ConversationExerciseGenerator
       "notes": "<optional brief English notes about grammar, vocabulary, or cultural context — null if not needed>"
     }
 
+    ## Avoid repetition
+
+    Do NOT generate a card whose request is the same as or very similar to any of these
+    already-generated requests:
+    %s
+
     Keep both lines to 1-2 sentences. Use kanji appropriate for the JLPT level.
   PROMPT
 
@@ -90,8 +96,8 @@ class ConversationExerciseGenerator
     }
   PROMPT
 
-  def self.call(context_name:, difficulty:, prompt: nil, scenario: nil)
-    new(context_name: context_name, difficulty: difficulty, prompt: prompt, scenario: scenario).call
+  def self.call(context_name:, difficulty:, prompt: nil, scenario: nil, exclude_requests: [])
+    new(context_name: context_name, difficulty: difficulty, prompt: prompt, scenario: scenario, exclude_requests: exclude_requests).call
   end
 
   def self.improve(exercise:, feedbacks:)
@@ -102,11 +108,12 @@ class ConversationExerciseGenerator
     new(context_name: nil, difficulty: nil).fetch_readings(exercise)
   end
 
-  def initialize(context_name:, difficulty:, prompt: nil, scenario: nil)
-    @context_name = context_name
-    @difficulty   = difficulty
-    @prompt       = prompt
-    @scenario     = scenario
+  def initialize(context_name:, difficulty:, prompt: nil, scenario: nil, exclude_requests: [])
+    @context_name      = context_name
+    @difficulty        = difficulty
+    @prompt            = prompt
+    @scenario          = scenario
+    @exclude_requests  = Array(exclude_requests)
   end
 
   def call
@@ -169,7 +176,8 @@ class ConversationExerciseGenerator
   def build_prompt
     scenario = @scenario.presence || "any everyday situation — be creative and specific"
     extra    = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
-    format(PROMPT, @difficulty.upcase, @context_name, scenario, extra)
+    exclude  = @exclude_requests.any? ? @exclude_requests.map.with_index(1) { |r, i| "#{i}. #{r}" }.join("\n") : "none"
+    format(PROMPT, @difficulty.upcase, @context_name, scenario, extra, exclude)
   end
 
   def run_psi(prompt)

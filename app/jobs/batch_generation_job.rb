@@ -33,14 +33,15 @@ class BatchGenerationJob < ApplicationJob
     batch = Batch.find(batch_id)
     batch.update!(status: :running)
 
-    # Diversity tracking — shuffled scenario list for conversations;
-    # accumulated verb list for exclusion in verb batches.
-    scenarios     = CONVERSATION_SCENARIOS.shuffle
-    used_verbs    = []
+    # Diversity tracking — shuffled scenario list and accumulated request
+    # strings for conversations; accumulated verb list for verb batches.
+    scenarios        = CONVERSATION_SCENARIOS.shuffle
+    used_requests    = []
+    used_verbs       = []
 
     batch.batch_items.order(:id).each_with_index do |item, index|
       scenario = scenarios[index % scenarios.size]
-      generate_item(batch, item, scenario: scenario, used_verbs: used_verbs)
+      generate_item(batch, item, scenario: scenario, used_requests: used_requests, used_verbs: used_verbs)
       ActionCable.server.broadcast(
         batch.stream_name,
         { type: "progress", completed: batch.completed_count,
@@ -58,20 +59,21 @@ class BatchGenerationJob < ApplicationJob
 
   private
 
-  def generate_item(batch, item, scenario:, used_verbs:)
+  def generate_item(batch, item, scenario:, used_requests:, used_verbs:)
     last_error = nil
 
     MAX_ATTEMPTS.times do
       item.increment!(:attempt_count)
       begin
         exercise = if batch.conversation?
-          generate_conversation(batch, scenario: scenario)
+          generate_conversation(batch, scenario: scenario, used_requests: used_requests)
         else
           generate_verb(batch, used_verbs: used_verbs)
         end
         item.update!(status: :completed, exercise: exercise)
         batch.increment!(:completed_count)
-        used_verbs << exercise.verb_jp if exercise.respond_to?(:verb_jp)
+        used_requests << exercise.request_jp if exercise.respond_to?(:request_jp)
+        used_verbs    << exercise.verb_jp    if exercise.respond_to?(:verb_jp)
         return
       rescue => e
         last_error = e
@@ -82,11 +84,12 @@ class BatchGenerationJob < ApplicationJob
     batch.increment!(:failed_count)
   end
 
-  def generate_conversation(batch, scenario:)
+  def generate_conversation(batch, scenario:, used_requests:)
     result = ConversationExerciseGenerator.call(
-      context_name: batch.context&.name || "general",
-      difficulty:   batch.difficulty,
-      scenario:     scenario
+      context_name:     batch.context&.name || "general",
+      difficulty:       batch.difficulty,
+      scenario:         scenario,
+      exclude_requests: used_requests
     )
     ConversationExercise.create!(
       context:          batch.context,
