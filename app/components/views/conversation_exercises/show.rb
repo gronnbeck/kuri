@@ -56,6 +56,7 @@ class Views::ConversationExercises::Show < ApplicationView
           div(class: "ce-side") do
             div(class: "ce-side-label") { "Front" }
             div(class: "ce-jp") { @exercise.request_jp }
+            div(class: "ce-reading") { @exercise.request_reading } if @exercise.request_reading.present?
             div(class: "ce-en ce-en--hint") { @exercise.response_en } if @exercise.response_en.present?
           end
           div(class: "ce-divider")
