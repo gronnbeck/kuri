@@ -9,6 +9,15 @@ Create a new exercise type (similar to Conversations) focused on verb conjugatio
 - Audio attached to both request and response sides
 - Same Anki export support as Conversation exercises
 
+## Batch Card Generation
+
+Generate multiple exercise cards in one go, rather than one at a time.
+
+- Applies to both Conversation Exercises and Verb Transformation Exercises
+- User specifies a count (e.g. 10 cards) plus the usual options (difficulty, context/target form, etc.)
+- Cards are generated in sequence and saved; user is taken to a review list on completion
+- Consider running generations in a background job (Solid Queue) to avoid request timeouts
+
 ## Conversation Card Design — Responsive Fix
 
 The CSS written for the Kuri Anki deck template is not responsive and breaks layout on small screens (e.g. iPhone).
