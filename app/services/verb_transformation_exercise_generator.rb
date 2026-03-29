@@ -137,7 +137,7 @@ class VerbTransformationExerciseGenerator
     raise "psi error: #{lines.find { |l| l["type"] == "error" }&.dig("message")}" if lines.any? { |l| l["type"] == "error" }
     response = lines.find { |l| l["type"] == "response" }
     raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
-    data = JSON.parse(response["content"].strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, ""))
+    data = extract_json(response["content"])
     {
       verb_reading:   data["verb_reading"].to_s.strip.presence,
       answer_reading: data["answer_reading"].to_s.strip.presence
@@ -158,7 +158,7 @@ class VerbTransformationExerciseGenerator
     response = lines.find { |l| l["type"] == "response" }
     raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
 
-    data = JSON.parse(response["content"].strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, ""))
+    data = extract_json(response["content"])
     Result.new(
       verb_jp:          data["verb_jp"].to_s.strip,
       verb_en:          data["verb_en"].to_s.strip,
@@ -170,8 +170,6 @@ class VerbTransformationExerciseGenerator
       difficulty_level: data["difficulty_level"].to_s.strip.presence,
       notes:            data["notes"].presence
     )
-  rescue JSON::ParserError => e
-    raise "unexpected LLM response format: #{e.message}"
   end
 
   def build_prompt
@@ -203,5 +201,16 @@ class VerbTransformationExerciseGenerator
       "PSI_ANTHROPIC_API_KEY" => ENV["PSI_ANTHROPIC_API_KEY"],
       "PSI_MODEL"             => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
     }.compact
+  end
+
+  def extract_json(content)
+    json = content.to_s.strip
+    # Strip markdown code fences if present
+    json = json.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, "").strip
+    # If the model prefixed the JSON with prose, pull out the first {...} block
+    json = json[/\{.*\}/m] || json
+    JSON.parse(json)
+  rescue JSON::ParserError => e
+    raise "unexpected LLM response format: #{e.message}"
   end
 end

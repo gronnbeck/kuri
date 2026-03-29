@@ -121,13 +121,11 @@ class ConversationExerciseGenerator
     raise "psi error: #{lines.find { |l| l["type"] == "error" }&.dig("message")}" if lines.any? { |l| l["type"] == "error" }
     response = lines.find { |l| l["type"] == "response" }
     raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
-    data = JSON.parse(response["content"].strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, ""))
+    data = extract_json(response["content"])
     {
       request_reading:  data["request_reading"].to_s.strip.presence,
       response_reading: data["response_reading"].to_s.strip.presence
     }
-  rescue JSON::ParserError => e
-    raise "unexpected LLM response format: #{e.message}"
   end
 
   def improve(exercise, feedbacks)
@@ -156,7 +154,7 @@ class ConversationExerciseGenerator
     response = lines.find { |l| l["type"] == "response" }
     raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
 
-    data = JSON.parse(response["content"].strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, ""))
+    data = extract_json(response["content"])
     Result.new(
       request_jp:       data["request_jp"].to_s.strip,
       request_en:       data["request_en"].to_s.strip,
@@ -166,8 +164,6 @@ class ConversationExerciseGenerator
       response_reading: data["response_reading"].to_s.strip.presence,
       notes:            data["notes"].presence
     )
-  rescue JSON::ParserError => e
-    raise "unexpected LLM response format: #{e.message}"
   end
 
   def build_prompt
@@ -189,5 +185,14 @@ class ConversationExerciseGenerator
       "PSI_ANTHROPIC_API_KEY" => ENV["PSI_ANTHROPIC_API_KEY"],
       "PSI_MODEL"             => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
     }.compact
+  end
+
+  def extract_json(content)
+    json = content.to_s.strip
+    json = json.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, "").strip
+    json = json[/\{.*\}/m] || json
+    JSON.parse(json)
+  rescue JSON::ParserError => e
+    raise "unexpected LLM response format: #{e.message}"
   end
 end
