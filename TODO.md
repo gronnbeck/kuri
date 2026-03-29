@@ -18,6 +18,23 @@ Generate multiple exercise cards in one go, rather than one at a time.
 - Cards are generated in sequence and saved; user is taken to a review list on completion
 - Consider running generations in a background job (Solid Queue) to avoid request timeouts
 
+## Batch Anki Export
+
+Export multiple cards to Anki at once from the index view, rather than one at a time.
+
+- Applies to both Conversation Exercises and Verb Transformation Exercises
+- Checkbox selection on the index page, or "Export all unadded" shortcut
+- Runs exports in sequence; shows a summary of successes/failures on completion
+
+## Enrich Existing Anki Cards
+
+Add a way to enhance notes already in Anki by transforming one field and writing the result into another.
+
+- Use cases: add a furigana reading field derived from a kanji field; add an English translation field derived from a Japanese field
+- User picks a source field, a transformation type (furigana / translate), and a destination field
+- Kuri fetches matching notes from AnkiConnect, runs the transformation via AI, and updates the notes in place
+- Should work across decks and note types
+
 ## Conversation Card Design — Responsive Fix
 
 The CSS written for the Kuri Anki deck template is not responsive and breaks layout on small screens (e.g. iPhone).
