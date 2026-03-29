@@ -42,13 +42,9 @@ The CSS written for the Kuri Anki deck template is not responsive and breaks lay
 - Fix template CSS so cards render correctly at narrow viewport widths
 - Test on mobile-sized screens
 
-## Expose Anki Card Templates in Settings
+## ~~Expose Anki Card Templates in Settings~~ ✓ Done
 
-The front/back HTML + CSS templates for Anki cards are currently only stored in Anki and/or the chat history.
-
-- Add a section in Settings where the card templates are displayed as copyable text blocks
-- One block each: Front HTML, Back HTML, CSS
-- Copy-to-clipboard button for each
+~~The front/back HTML + CSS templates for Anki cards are currently only stored in Anki and/or the chat history.~~
 
 ## Add Users and Tie Resources to Users
 

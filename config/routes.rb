@@ -67,6 +67,7 @@ Rails.application.routes.draw do
 
   get "settings", to: "settings#index"
   get "settings/listen", to: "settings#listen", as: :settings_listen
+  get "settings/listen/card_templates", to: "settings/card_templates#show", as: :settings_listen_card_templates
   scope "/settings/listen", as: "settings_listen" do
     resources :actors
     resource :conversations, only: [ :show, :update ], controller: "settings/conversations" do

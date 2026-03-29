@@ -15,7 +15,8 @@ class Views::Settings::Listen < ApplicationView
         render Views::Components::SettingsNavList.new(items: [
           { title: "Actors",        description: "Manage voices used for audio clip generation",                path: helpers.settings_listen_actors_path },
           { title: "Conversations", description: "Configure Anki connection for conversation exercise export", path: helpers.settings_listen_conversations_path },
-          { title: "Verb Exercises", description: "Configure Anki connection for verb transformation exercise export", path: helpers.settings_listen_verbs_path }
+          { title: "Verb Exercises",   description: "Configure Anki connection for verb transformation exercise export", path: helpers.settings_listen_verbs_path },
+          { title: "Card Templates",  description: "Copy Anki card templates (front, back, CSS) for conversation and verb cards", path: helpers.settings_listen_card_templates_path }
         ])
       end
     end
