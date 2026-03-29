@@ -1125,6 +1125,16 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
   background: #f5f5f5;
 }
 
+.button--success {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+
+.button--success:hover {
+  background: #15803d;
+}
+
 .button--disabled {
   background: #f3f4f6;
   color: #9ca3af;
@@ -1316,6 +1326,27 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
 .ce-audio-missing {
   font-size: 0.85rem;
   color: #aaa;
+}
+
+.ce-audio-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.ce-audio-compare-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ce-audio-compare-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  width: 4rem;
+  flex-shrink: 0;
 }
 
 /* --- Conversation exercise feedback --- */

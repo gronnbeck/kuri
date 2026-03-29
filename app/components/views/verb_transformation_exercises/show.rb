@@ -87,7 +87,26 @@ class Views::VerbTransformationExercises::Show < ApplicationView
           div(class: "ce-audio-item") do
             span(class: "ce-audio-kind") { kind.capitalize }
             if va&.audio&.attached?
-              audio(controls: true, src: helpers.verb_audio_path(va), class: "audio-player", preload: "none", style: "flex:1")
+              if va.pending_audio.attached?
+                div(class: "ce-audio-compare") do
+                  div(class: "ce-audio-compare-row") do
+                    span(class: "ce-audio-compare-label") { "Current" }
+                    audio(controls: true, src: helpers.verb_audio_path(va), class: "audio-player", preload: "none")
+                  end
+                  div(class: "ce-audio-compare-row") do
+                    span(class: "ce-audio-compare-label") { "New" }
+                    audio(controls: true, src: helpers.verb_audio_path(va) + "?pending=1", class: "audio-player", preload: "none")
+                    button_to "Use new", helpers.confirm_audio_verb_transformation_exercise_path(@exercise, kind: kind),
+                      method: :post, class: "button button--small button--success"
+                    button_to "Discard", helpers.discard_pending_audio_verb_transformation_exercise_path(@exercise, kind: kind),
+                      method: :post, class: "button button--small button--ghost"
+                  end
+                end
+              else
+                audio(controls: true, src: helpers.verb_audio_path(va), class: "audio-player", preload: "none", style: "flex:1")
+                button_to "Regenerate", helpers.regenerate_audio_verb_transformation_exercise_path(@exercise, kind: kind),
+                  method: :post, class: "button button--small button--ghost"
+              end
             else
               span(class: "ce-audio-missing") { "No audio" }
               link_to "Generate", helpers.generate_audio_verb_transformation_exercise_path(@exercise, kind: kind),

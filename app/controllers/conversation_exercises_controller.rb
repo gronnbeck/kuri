@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ConversationExercisesController < ApplicationController
-  before_action :set_exercise, only: [ :show, :edit, :update, :destroy, :add_to_anki, :generate_audio, :archive, :improve, :generate_readings ]
+  before_action :set_exercise, only: [ :show, :edit, :update, :destroy, :add_to_anki, :generate_audio, :regenerate_audio, :confirm_audio, :discard_pending_audio, :archive, :improve, :generate_readings ]
 
   def index
     scope = params[:archived] == "1" ? ConversationExercise.where(archived: true) : ConversationExercise.where(archived: false)
@@ -100,6 +100,53 @@ class ConversationExercisesController < ApplicationController
     redirect_to conversation_exercise_path(@exercise), notice: "#{kind.capitalize} audio generated."
   rescue => e
     redirect_to conversation_exercise_path(@exercise), alert: "Audio generation failed: #{e.message}"
+  end
+
+  def regenerate_audio
+    kind = params[:kind].to_s
+    ca   = @exercise.conversation_audios.find_by!(kind: kind)
+
+    other_kind  = kind == "request" ? "response" : "request"
+    other_audio = @exercise.conversation_audios.find_by(kind: other_kind)
+    actor = Actor.pick_random(exclude_id: other_audio&.actor_id)
+
+    unless actor
+      redirect_to conversation_exercise_path(@exercise), alert: "Add an actor in Settings → Listen → Actors first."
+      return
+    end
+
+    text = kind == "request" \
+      ? (@exercise.request_reading.presence || @exercise.request_jp)
+      : (@exercise.response_reading.presence || @exercise.response_jp)
+
+    audio_data = ElevenLabsTts.call(text, voice_id: actor.voice_id)
+    ca.pending_audio.attach(
+      io:           StringIO.new(audio_data),
+      filename:     "conv_#{@exercise.id}_#{kind}_pending.mp3",
+      content_type: "audio/mpeg"
+    )
+    redirect_to conversation_exercise_path(@exercise), notice: "New #{kind} audio generated — review and confirm below."
+  rescue => e
+    redirect_to conversation_exercise_path(@exercise), alert: "Regeneration failed: #{e.message}"
+  end
+
+  def confirm_audio
+    kind = params[:kind].to_s
+    ca   = @exercise.conversation_audios.find_by!(kind: kind)
+    raise "No pending audio to confirm." unless ca.pending_audio.attached?
+
+    ca.audio.attach(ca.pending_audio.blob)
+    ca.pending_audio.purge
+    redirect_to conversation_exercise_path(@exercise), notice: "#{kind.capitalize} audio replaced."
+  rescue => e
+    redirect_to conversation_exercise_path(@exercise), alert: "Failed: #{e.message}"
+  end
+
+  def discard_pending_audio
+    kind = params[:kind].to_s
+    ca   = @exercise.conversation_audios.find_by!(kind: kind)
+    ca.pending_audio.purge
+    redirect_to conversation_exercise_path(@exercise), notice: "New #{kind} audio discarded."
   end
 
   def archive

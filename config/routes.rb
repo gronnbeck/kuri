@@ -43,6 +43,9 @@ Rails.application.routes.draw do
     member do
       post :add_to_anki
       post :generate_audio
+      post :regenerate_audio
+      post :confirm_audio
+      post :discard_pending_audio
       post :archive
       post :improve
       post :generate_readings

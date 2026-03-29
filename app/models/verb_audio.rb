@@ -4,6 +4,7 @@ class VerbAudio < ApplicationRecord
   belongs_to :verb_transformation_exercise
   belongs_to :actor, optional: true
   has_one_attached :audio
+  has_one_attached :pending_audio
 
   enum :kind, { verb: "verb", answer: "answer" }
 

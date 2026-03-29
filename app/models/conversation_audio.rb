@@ -5,6 +5,7 @@ class ConversationAudio < ApplicationRecord
   belongs_to :actor, optional: true
 
   has_one_attached :audio
+  has_one_attached :pending_audio
 
   enum :kind, { request: "request", response: "response" }
 

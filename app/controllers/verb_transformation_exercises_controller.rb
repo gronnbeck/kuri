@@ -2,7 +2,8 @@
 
 class VerbTransformationExercisesController < ApplicationController
   before_action :set_exercise, only: [ :show, :edit, :update, :destroy, :add_to_anki,
-                                       :generate_audio, :archive, :improve, :generate_readings ]
+                                       :generate_audio, :regenerate_audio, :confirm_audio, :discard_pending_audio,
+                                       :archive, :improve, :generate_readings ]
 
   def index
     scope = params[:archived] == "1" ? VerbTransformationExercise.where(archived: true) : VerbTransformationExercise.where(archived: false)
@@ -98,6 +99,53 @@ class VerbTransformationExercisesController < ApplicationController
     redirect_to verb_transformation_exercise_path(@exercise), notice: "#{kind.capitalize} audio generated."
   rescue => e
     redirect_to verb_transformation_exercise_path(@exercise), alert: "Audio generation failed: #{e.message}"
+  end
+
+  def regenerate_audio
+    kind = params[:kind].to_s
+    va   = @exercise.verb_audios.find_by!(kind: kind)
+
+    other_kind  = kind == "verb" ? "answer" : "verb"
+    other_audio = @exercise.verb_audios.find_by(kind: other_kind)
+    actor = other_audio&.actor || Actor.pick_random
+
+    unless actor
+      redirect_to verb_transformation_exercise_path(@exercise), alert: "Add an actor in Settings → Listen → Actors first."
+      return
+    end
+
+    text = kind == "verb" \
+      ? (@exercise.verb_reading.presence || @exercise.verb_jp)
+      : (@exercise.answer_reading.presence || @exercise.answer_jp)
+
+    audio_data = ElevenLabsTts.call(text, voice_id: actor.voice_id)
+    va.pending_audio.attach(
+      io:           StringIO.new(audio_data),
+      filename:     "verb_#{@exercise.id}_#{kind}_pending.mp3",
+      content_type: "audio/mpeg"
+    )
+    redirect_to verb_transformation_exercise_path(@exercise), notice: "New #{kind} audio generated — review and confirm below."
+  rescue => e
+    redirect_to verb_transformation_exercise_path(@exercise), alert: "Regeneration failed: #{e.message}"
+  end
+
+  def confirm_audio
+    kind = params[:kind].to_s
+    va   = @exercise.verb_audios.find_by!(kind: kind)
+    raise "No pending audio to confirm." unless va.pending_audio.attached?
+
+    va.audio.attach(va.pending_audio.blob)
+    va.pending_audio.purge
+    redirect_to verb_transformation_exercise_path(@exercise), notice: "#{kind.capitalize} audio replaced."
+  rescue => e
+    redirect_to verb_transformation_exercise_path(@exercise), alert: "Failed: #{e.message}"
+  end
+
+  def discard_pending_audio
+    kind = params[:kind].to_s
+    va   = @exercise.verb_audios.find_by!(kind: kind)
+    va.pending_audio.purge
+    redirect_to verb_transformation_exercise_path(@exercise), notice: "New #{kind} audio discarded."
   end
 
   def archive
