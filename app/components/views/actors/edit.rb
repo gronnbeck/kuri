@@ -24,6 +24,11 @@ class Views::Actors::Edit < ApplicationView
           div(class: "actor-form-row") do
             input(type: "text", name: "name", placeholder: "Name (optional)", class: "micro-input", value: @actor.name.to_s, style: "width: 200px")
             input(type: "text", name: "voice_id", placeholder: "ElevenLabs Voice ID", class: "micro-input", value: @actor.voice_id, style: "flex: 1; font-family: monospace; font-size: 0.9rem;", required: true)
+            select(name: "gender", class: "form-select") do
+              option(value: "") { "— gender —" }
+              option(value: "female", selected: @actor.gender == "female") { "Female" }
+              option(value: "male",   selected: @actor.gender == "male")   { "Male" }
+            end
             button(type: "submit", class: "button") { "Save" }
           end
         end

@@ -9,7 +9,8 @@ class ActorsController < ApplicationController
   def create
     Actor.create!(
       name:     params[:name].presence,
-      voice_id: params[:voice_id].to_s.strip
+      voice_id: params[:voice_id].to_s.strip,
+      gender:   params[:gender].presence
     )
     redirect_to settings_listen_actors_path, notice: "Actor added."
   rescue => e
@@ -25,7 +26,8 @@ class ActorsController < ApplicationController
     actor = Actor.find(params[:id])
     actor.update!(
       name:     params[:name].presence,
-      voice_id: params[:voice_id].to_s.strip
+      voice_id: params[:voice_id].to_s.strip,
+      gender:   params[:gender].presence
     )
     redirect_to settings_listen_actors_path, notice: "Actor updated."
   rescue => e

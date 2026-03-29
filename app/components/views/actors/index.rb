@@ -23,6 +23,11 @@ class Views::Actors::Index < ApplicationView
           div(class: "actor-form-row") do
             input(type: "text", name: "name", placeholder: "Name (optional)", class: "micro-input", style: "width: 200px")
             input(type: "text", name: "voice_id", placeholder: "ElevenLabs Voice ID", class: "micro-input", style: "flex: 1; font-family: monospace; font-size: 0.9rem;", required: true)
+            select(name: "gender", class: "form-select") do
+              option(value: "") { "— gender —" }
+              option(value: "female") { "Female" }
+              option(value: "male") { "Male" }
+            end
             button(type: "submit", class: "button") { "Add" }
           end
         end
@@ -37,6 +42,7 @@ class Views::Actors::Index < ApplicationView
             thead do
               tr do
                 th { "Name" }
+                th { "Gender" }
                 th { "Voice ID" }
                 th { "Clips" }
                 th { "" }
@@ -46,6 +52,7 @@ class Views::Actors::Index < ApplicationView
               @actors.each do |actor|
                 tr do
                   td { actor.display_name }
+                  td { actor.gender.to_s.capitalize.presence || "—" }
                   td { code { actor.voice_id } }
                   td { actor.clips.size.to_s }
                   td(class: "actor-table-actions") do
