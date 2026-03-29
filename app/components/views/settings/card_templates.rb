@@ -233,10 +233,11 @@ class Views::Settings::CardTemplates < ApplicationView
     mappings = setting&.field_mappings.presence || {}
     # Build reverse: source_field_name → anki_field_name
     reverse = mappings.invert
-    template.gsub(/\{\{(\w+)\}\}/) do |match|
-      source = Regexp.last_match(1)
+    template.gsub(/\{\{([#\/]?)(\w+)\}\}/) do |match|
+      prefix = Regexp.last_match(1)
+      source = Regexp.last_match(2)
       anki_name = reverse[source]
-      anki_name ? "{{#{anki_name}}}" : match
+      anki_name ? "{{#{prefix}#{anki_name}}}" : match
     end
   end
 end
