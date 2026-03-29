@@ -23,6 +23,8 @@ class VerbTransformationExerciseGenerator
     ## Rules
 
     - Choose a verb the learner is likely to encounter in daily life or textbooks at this level
+    - VARY your choice — cover different verb categories (movement, food, communication, emotion, work, daily routine, etc.)
+    - Do NOT reuse any verb from this list (already used): %s
     - Use kanji appropriate for the target JLPT level (avoid kanji beyond the level)
     - Provide hiragana-only readings for both the dictionary form and the answer
     - Keep notes brief and useful (grammar pattern, any irregularities, or usage tip) — null if nothing noteworthy
@@ -92,8 +94,8 @@ class VerbTransformationExerciseGenerator
     }
   PROMPT
 
-  def self.call(difficulty:, target_form: nil, verb: nil, prompt: nil)
-    new(difficulty: difficulty, target_form: target_form, verb: verb, prompt: prompt).call
+  def self.call(difficulty:, target_form: nil, verb: nil, prompt: nil, exclude_verbs: [])
+    new(difficulty: difficulty, target_form: target_form, verb: verb, prompt: prompt, exclude_verbs: exclude_verbs).call
   end
 
   def self.improve(exercise:, feedbacks:)
@@ -104,11 +106,12 @@ class VerbTransformationExerciseGenerator
     new(difficulty: nil, target_form: nil).fetch_readings(exercise)
   end
 
-  def initialize(difficulty:, target_form:, verb: nil, prompt: nil)
-    @difficulty  = difficulty
-    @target_form = target_form
-    @verb        = verb
-    @prompt      = prompt
+  def initialize(difficulty:, target_form:, verb: nil, prompt: nil, exclude_verbs: [])
+    @difficulty     = difficulty
+    @target_form    = target_form
+    @verb           = verb
+    @prompt         = prompt
+    @exclude_verbs  = Array(exclude_verbs)
   end
 
   def call
@@ -188,8 +191,9 @@ class VerbTransformationExerciseGenerator
       verb_line = "— (pick a natural verb appropriate for JLPT #{level})"
       task_line = "Pick a natural, commonly-used Japanese verb appropriate for JLPT #{level}."
     end
-    extra = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
-    format(PROMPT, level, form_label, verb_line, extra, task_line)
+    extra         = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
+    exclude_line  = @exclude_verbs.any? ? @exclude_verbs.join(", ") : "none"
+    format(PROMPT, level, form_label, verb_line, extra, task_line, exclude_line)
   end
 
   def run_psi(prompt)

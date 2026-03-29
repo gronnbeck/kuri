@@ -9,23 +9,22 @@ class ConversationExerciseGenerator
     Generate a short Japanese conversation exercise for a learner at JLPT %s level.
 
     Context: %s
+    Scenario: %s
     %s
 
-    ## Roles — STRICT RULE
+    ## Roles — ABSOLUTE RULE
 
-    The learner always plays the CUSTOMER / GUEST / VISITOR role.
-    The other speaker (REQUESTER) is always staff, a service worker, or a service provider.
+    The learner always plays the CUSTOMER / GUEST / PATIENT / PASSENGER / CIVILIAN role.
+    The other speaker (the one asking or addressing the learner) is ALWAYS staff, a service worker,
+    a professional, or someone in a helper role.
 
-    NEVER generate a card where the learner must play a staff, waiter, shop clerk, receptionist,
-    or any service role. The learner is always the one being served.
+    NEVER generate a card where the learner's response sounds like:
+    - A waiter or server taking an order
+    - A shop clerk, cashier, or receptionist serving a customer
+    - Any staff or service-role phrasing (いらっしゃいませ, ご注文はお決まりですか, etc.)
 
-    Examples:
-    - Restaurant: requester = waiter → learner responds as customer ordering or answering
-    - Hotel: requester = front desk staff → learner responds as guest checking in
-    - Shop: requester = shop clerk → learner responds as shopper
-    - Train station: requester = station staff → learner responds as traveller
-
-    The exercise card drills the learner's response. They see what is said TO them and must produce their reply.
+    The learner is always the one BEING served, helped, asked, or welcomed.
+    The learner's response is always that of a layperson — a customer, guest, patient, or passenger.
 
     ## Output
 
@@ -34,7 +33,7 @@ class ConversationExerciseGenerator
       "request_jp": "<what is said TO the learner — in Japanese, short and natural>",
       "request_en": "<natural English translation of the request>",
       "request_reading": "<hiragana-only reading of request_jp — every character written in hiragana, no kanji or katakana>",
-      "response_jp": "<what the learner (the layman/responder) should say back — in Japanese, short and natural, polite ます/です form>",
+      "response_jp": "<what the learner says back — in Japanese, short and natural, polite ます/です form>",
       "response_en": "<natural English translation of the response>",
       "response_reading": "<hiragana-only reading of response_jp — every character written in hiragana, no kanji or katakana>",
       "notes": "<optional brief English notes about grammar, vocabulary, or cultural context — null if not needed>"
@@ -91,8 +90,8 @@ class ConversationExerciseGenerator
     }
   PROMPT
 
-  def self.call(context_name:, difficulty:, prompt: nil)
-    new(context_name: context_name, difficulty: difficulty, prompt: prompt).call
+  def self.call(context_name:, difficulty:, prompt: nil, scenario: nil)
+    new(context_name: context_name, difficulty: difficulty, prompt: prompt, scenario: scenario).call
   end
 
   def self.improve(exercise:, feedbacks:)
@@ -103,10 +102,11 @@ class ConversationExerciseGenerator
     new(context_name: nil, difficulty: nil).fetch_readings(exercise)
   end
 
-  def initialize(context_name:, difficulty:, prompt: nil)
+  def initialize(context_name:, difficulty:, prompt: nil, scenario: nil)
     @context_name = context_name
     @difficulty   = difficulty
     @prompt       = prompt
+    @scenario     = scenario
   end
 
   def call
@@ -167,8 +167,9 @@ class ConversationExerciseGenerator
   end
 
   def build_prompt
-    extra = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
-    format(PROMPT, @difficulty.upcase, @context_name, extra)
+    scenario = @scenario.presence || "any everyday situation — be creative and specific"
+    extra    = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
+    format(PROMPT, @difficulty.upcase, @context_name, scenario, extra)
   end
 
   def run_psi(prompt)
