@@ -17,24 +17,26 @@ class VerbTransformationExercisesController < ApplicationController
   def generate
     difficulty  = params[:difficulty].presence || "n5"
     target_form = params[:target_form].presence
+    verb        = params[:verb].presence
     prompt      = params[:prompt].presence
 
     result = VerbTransformationExerciseGenerator.call(
       difficulty:  difficulty,
       target_form: target_form,
+      verb:        verb,
       prompt:      prompt
     )
 
     @exercise = VerbTransformationExercise.create!(
-      verb_jp:        result.verb_jp,
-      verb_en:        result.verb_en,
-      verb_reading:   result.verb_reading,
-      target_form:    result.target_form,
-      answer_jp:      result.answer_jp,
-      answer_en:      result.answer_en,
-      answer_reading: result.answer_reading,
-      notes:          result.notes,
-      difficulty_level: difficulty
+      verb_jp:          result.verb_jp,
+      verb_en:          result.verb_en,
+      verb_reading:     result.verb_reading,
+      target_form:      result.target_form,
+      answer_jp:        result.answer_jp,
+      answer_en:        result.answer_en,
+      answer_reading:   result.answer_reading,
+      notes:            result.notes,
+      difficulty_level: result.difficulty_level.presence || difficulty
     )
     redirect_to verb_transformation_exercise_path(@exercise)
   rescue => e

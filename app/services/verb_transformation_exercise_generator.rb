@@ -5,17 +5,19 @@ class VerbTransformationExerciseGenerator
 
   Result = Struct.new(:verb_jp, :verb_en, :verb_reading, :target_form,
                       :answer_jp, :answer_en, :answer_reading, :notes,
+                      :difficulty_level,
                       keyword_init: true)
 
   PROMPT = <<~PROMPT
     Generate a Japanese verb conjugation exercise for a learner at JLPT %s level.
 
     Target form: %s
+    Verb: %s
     %s
 
     ## Task
 
-    Pick a natural, commonly-used Japanese verb appropriate for JLPT %s.
+    %s
     Produce the correct conjugated form for the target form above.
 
     ## Rules
@@ -29,14 +31,15 @@ class VerbTransformationExerciseGenerator
 
     Respond with JSON only — no markdown, no explanation.
     {
-      "verb_jp":       "<verb in dictionary form — kanji/kana, e.g. 食べる>",
-      "verb_en":       "<English meaning of the verb, e.g. to eat>",
-      "verb_reading":  "<hiragana-only reading of verb_jp>",
-      "target_form":   "<the target form key, exactly as given above>",
-      "answer_jp":     "<correct conjugated form in Japanese>",
-      "answer_en":     "<English description of the conjugated form, e.g. eat (polite)>",
-      "answer_reading":"<hiragana-only reading of answer_jp>",
-      "notes":         "<optional brief English grammar note — null if not needed>"
+      "verb_jp":        "<verb in dictionary form — kanji/kana, e.g. 食べる>",
+      "verb_en":        "<English meaning of the verb, e.g. to eat>",
+      "verb_reading":   "<hiragana-only reading of verb_jp>",
+      "target_form":    "<the target form key, exactly as given above>",
+      "answer_jp":      "<correct conjugated form in Japanese>",
+      "answer_en":      "<English description of the conjugated form, e.g. eat (polite)>",
+      "answer_reading": "<hiragana-only reading of answer_jp>",
+      "difficulty_level": "<JLPT level of the verb: n5, n4, n3, n2, or n1>",
+      "notes":          "<optional brief English grammar note — null if not needed>"
     }
   PROMPT
 
@@ -89,8 +92,8 @@ class VerbTransformationExerciseGenerator
     }
   PROMPT
 
-  def self.call(difficulty:, target_form: nil, prompt: nil)
-    new(difficulty: difficulty, target_form: target_form, prompt: prompt).call
+  def self.call(difficulty:, target_form: nil, verb: nil, prompt: nil)
+    new(difficulty: difficulty, target_form: target_form, verb: verb, prompt: prompt).call
   end
 
   def self.improve(exercise:, feedbacks:)
@@ -101,9 +104,10 @@ class VerbTransformationExerciseGenerator
     new(difficulty: nil, target_form: nil).fetch_readings(exercise)
   end
 
-  def initialize(difficulty:, target_form:, prompt: nil)
+  def initialize(difficulty:, target_form:, verb: nil, prompt: nil)
     @difficulty  = difficulty
     @target_form = target_form
+    @verb        = verb
     @prompt      = prompt
   end
 
@@ -156,24 +160,33 @@ class VerbTransformationExerciseGenerator
 
     data = JSON.parse(response["content"].strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, ""))
     Result.new(
-      verb_jp:        data["verb_jp"].to_s.strip,
-      verb_en:        data["verb_en"].to_s.strip,
-      verb_reading:   data["verb_reading"].to_s.strip.presence,
-      target_form:    data["target_form"].to_s.strip,
-      answer_jp:      data["answer_jp"].to_s.strip,
-      answer_en:      data["answer_en"].to_s.strip,
-      answer_reading: data["answer_reading"].to_s.strip.presence,
-      notes:          data["notes"].presence
+      verb_jp:          data["verb_jp"].to_s.strip,
+      verb_en:          data["verb_en"].to_s.strip,
+      verb_reading:     data["verb_reading"].to_s.strip.presence,
+      target_form:      data["target_form"].to_s.strip,
+      answer_jp:        data["answer_jp"].to_s.strip,
+      answer_en:        data["answer_en"].to_s.strip,
+      answer_reading:   data["answer_reading"].to_s.strip.presence,
+      difficulty_level: data["difficulty_level"].to_s.strip.presence,
+      notes:            data["notes"].presence
     )
   rescue JSON::ParserError => e
     raise "unexpected LLM response format: #{e.message}"
   end
 
   def build_prompt
-    level      = @difficulty.upcase
     form_label = @target_form ? VerbTransformationExercise::TARGET_FORM_LABELS.fetch(@target_form, @target_form) : "any appropriate form"
-    extra      = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
-    format(PROMPT, level, form_label, extra, level, level)
+    if @verb.present?
+      level     = @difficulty&.upcase || "appropriate"
+      verb_line = @verb
+      task_line = "Use the verb provided above. Infer the appropriate JLPT level from the verb itself."
+    else
+      level     = @difficulty.upcase
+      verb_line = "— (pick a natural verb appropriate for JLPT #{level})"
+      task_line = "Pick a natural, commonly-used Japanese verb appropriate for JLPT #{level}."
+    end
+    extra = @prompt.present? ? "Additional instructions: #{@prompt}" : ""
+    format(PROMPT, level, form_label, verb_line, extra, task_line)
   end
 
   def run_psi(prompt)

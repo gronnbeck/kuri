@@ -35,11 +35,24 @@ class Views::VerbTransformationExercises::New < ApplicationView
 
     div(class: "exercise-content") do
       div(class: "exercise-section") do
-        form(action: helpers.generate_verb_transformation_exercises_path, method: "post", data: { turbo: "false" }) do
+        form(action: helpers.generate_verb_transformation_exercises_path, method: "post",
+             data: { turbo: "false", controller: "verb-form" }) do
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
 
+          div(class: "form-group") do
+            label(for: "verb") { "Verb (optional)" }
+            input(
+              type: "text",
+              name: "verb",
+              id: "verb",
+              class: "form-input",
+              placeholder: "e.g. 食べる, 行く, する — leave blank to let AI pick",
+              data: { action: "input->verb-form#toggleDifficulty" }
+            )
+          end
+
           div(class: "form-row") do
-            div(class: "form-group") do
+            div(class: "form-group", data: { verb_form_target: "difficultyGroup" }) do
               label(for: "difficulty") { "Difficulty" }
               select(name: "difficulty", id: "difficulty", class: "form-select") do
                 DIFFICULTIES.each do |label, val|
