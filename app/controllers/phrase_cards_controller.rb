@@ -14,20 +14,19 @@ class PhraseCardsController < ApplicationController
   end
 
   def generate
+    prompt     = params[:prompt].to_s.strip
     english    = params[:english].to_s.strip
-    context    = params[:context].to_s.strip
     difficulty = params[:difficulty].presence || "n5"
 
-    if english.blank?
-      redirect_to new_phrase_card_path, alert: "English phrase is required."
+    if prompt.blank? && english.blank?
+      redirect_to new_phrase_card_path, alert: "Enter a prompt or an English phrase."
       return
     end
 
-    result = PhraseCardGenerator.call(english: english, context: context, difficulty: difficulty)
+    result = PhraseCardGenerator.call(prompt: prompt, english: english, difficulty: difficulty)
 
     @card = PhraseCard.create!(
-      english:          english,
-      context:          context.presence,
+      english:          result.english,
       japanese:         result.japanese,
       hiragana:         result.hiragana,
       notes:            result.notes,

@@ -22,25 +22,25 @@ class Views::PhraseCards::New < ApplicationView
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
 
           div(class: "form-group") do
-            label(for: "english") { "English phrase" }
+            label(for: "prompt") { "What do you want a phrase for?" }
             input(
               type: "text",
-              name: "english",
-              id: "english",
+              name: "prompt",
+              id: "prompt",
               class: "form-input",
-              placeholder: "e.g. Could I have the bill, please?",
+              placeholder: "e.g. おります, asking for the bill, saying sorry politely",
               autofocus: true
             )
           end
 
           div(class: "form-group") do
-            label(for: "context") { "Context (optional)" }
+            label(for: "english") { "English phrase (optional — leave blank to let AI choose)" }
             input(
               type: "text",
-              name: "context",
-              id: "context",
+              name: "english",
+              id: "english",
               class: "form-input",
-              placeholder: "e.g. at a restaurant, formal situation"
+              placeholder: "e.g. Could I have the bill, please?"
             )
           end
 

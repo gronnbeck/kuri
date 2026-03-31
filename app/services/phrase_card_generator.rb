@@ -6,14 +6,14 @@ class PhraseCardGenerator
   PROMPT = <<~PROMPT
     Generate a Japanese phrase card for a learner at JLPT %s level.
 
-    English phrase: %s
-    Context:        %s
+    %s
 
     ## Output
 
     Respond with JSON only — no markdown, no explanation.
     {
-      "japanese":  "<natural Japanese translation using kanji appropriate for the JLPT level>",
+      "english":   "<a short, natural English phrase — use the one provided or write one that fits the prompt>",
+      "japanese":  "<natural Japanese using kanji appropriate for the JLPT level>",
       "hiragana":  "<hiragana-only reading — every character in hiragana, no kanji or katakana>",
       "notes":     "<optional brief English note about grammar or nuance — null if not needed>"
     }
@@ -21,20 +21,20 @@ class PhraseCardGenerator
     Keep the Japanese short and natural. Match the politeness level to the context (ます/です for formal, plain form for casual).
   PROMPT
 
-  Result = Struct.new(:japanese, :hiragana, :notes, keyword_init: true)
+  Result = Struct.new(:english, :japanese, :hiragana, :notes, keyword_init: true)
 
-  def self.call(english:, context:, difficulty:)
-    new(english: english, context: context, difficulty: difficulty).call
+  def self.call(prompt:, difficulty:, english: nil)
+    new(prompt: prompt, difficulty: difficulty, english: english).call
   end
 
-  def initialize(english:, context:, difficulty:)
-    @english    = english
-    @context    = context.presence || "general"
+  def initialize(prompt:, difficulty:, english: nil)
+    @prompt     = prompt
+    @english    = english.presence
     @difficulty = difficulty
   end
 
   def call
-    prompt = format(PROMPT, @difficulty.upcase, @english, @context)
+    prompt = format(PROMPT, @difficulty.upcase, build_request)
     stdout, stderr = run_psi(prompt)
 
     lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
@@ -48,6 +48,7 @@ class PhraseCardGenerator
 
     data = extract_json(response["content"])
     Result.new(
+      english:  data["english"].to_s.strip.presence || @english,
       japanese: data["japanese"].to_s.strip,
       hiragana: data["hiragana"].to_s.strip,
       notes:    data["notes"].presence
@@ -55,6 +56,13 @@ class PhraseCardGenerator
   end
 
   private
+
+  def build_request
+    parts = []
+    parts << "Prompt: #{@prompt}" if @prompt.present?
+    parts << "English phrase: #{@english}" if @english.present?
+    parts.any? ? parts.join("\n") : "Generate a useful everyday phrase."
+  end
 
   def run_psi(prompt)
     Bundler.with_unbundled_env do
