@@ -3,6 +3,7 @@ allowed-tools:
   - list_contexts
   - search_exercises
   - create_exercise
+  - create_phrase_card
 
 custom-tools:
   - name: list_exercises
@@ -59,3 +60,24 @@ custom-tools:
         description: "Hiragana-only reading of response_jp."
       - name: notes
         description: "Optional brief English notes about grammar, vocabulary, or cultural context."
+
+  - name: create_phrase_card
+    description: >
+      Create a standalone Japanese phrase card in Kuri.
+      Use this when the user wants to save a specific word, expression, or example sentence
+      as a phrase card (not a conversation exercise pair).
+      Provide hiragana-only reading (no kanji, no katakana) for the hiragana field.
+    executable: bin/kuri_create_phrase_card
+    params:
+      - name: difficulty
+        description: "JLPT level: n5, n4, n3, n2, or n1. Required."
+      - name: japanese
+        description: "The Japanese phrase or sentence (may include kanji). Required."
+      - name: hiragana
+        description: "Hiragana-only reading — every character in hiragana, no kanji or katakana. Required."
+      - name: english
+        description: "Natural English translation or meaning."
+      - name: context
+        description: "Short context label for what situation this phrase is used in."
+      - name: notes
+        description: "Optional brief English notes about grammar, nuance, or usage."

@@ -122,6 +122,40 @@ when "create_exercise"
     notes:       exercise.notes
   )
 
+when "create_phrase_card"
+  difficulty = input["difficulty"].to_s.strip.downcase
+  unless %w[n5 n4 n3 n2 n1].include?(difficulty)
+    json_out(error: "difficulty must be one of: n5, n4, n3, n2, n1")
+    exit 1
+  end
+
+  %w[japanese hiragana].each do |field|
+    if input[field].blank?
+      json_out(error: "#{field} is required")
+      exit 1
+    end
+  end
+
+  card = PhraseCard.create!(
+    english:          input["english"].to_s.strip.presence,
+    context:          input["context"].to_s.strip.presence,
+    japanese:         input["japanese"].to_s.strip,
+    hiragana:         input["hiragana"].to_s.strip,
+    notes:            input["notes"].to_s.strip.presence,
+    difficulty_level: difficulty
+  )
+
+  json_out(
+    created:    true,
+    id:         card.id,
+    difficulty: card.difficulty_level,
+    english:    card.english,
+    context:    card.context,
+    japanese:   card.japanese,
+    hiragana:   card.hiragana,
+    notes:      card.notes
+  )
+
 else
   json_out(error: "Unknown subcommand: #{subcommand.inspect}")
   exit 1
