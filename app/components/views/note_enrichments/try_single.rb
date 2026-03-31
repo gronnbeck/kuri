@@ -7,9 +7,11 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
     "furigana"  => "Furigana — annotate kanji with HTML <ruby> tags"
   }.freeze
 
-  def initialize(transformation:, source_text:, result:, error:)
+  def initialize(transformation:, source_text:, result:, error:, anki_note_id: nil, field_name: nil)
     @transformation = transformation
     @source_text    = source_text
+    @anki_note_id   = anki_note_id
+    @field_name     = field_name
     @result         = result
     @error          = error
   end
@@ -27,6 +29,8 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
       div(class: "exercise-section") do
         form(action: helpers.try_single_note_enrichments_path, method: "post", class: "form") do
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
+          input(type: "hidden", name: "anki_note_id", value: @anki_note_id) if @anki_note_id
+          input(type: "hidden", name: "field_name", value: @field_name) if @field_name
 
           div(class: "form-row") do
             label(class: "form-label") { "Transformation" }
@@ -86,9 +90,11 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
                 input(type: "hidden", name: "value", value: @result)
 
                 input(type: "number", name: "anki_note_id", class: "form-input form-input--small",
-                      placeholder: "Note ID", required: true, style: "width: 12rem")
+                      placeholder: "Note ID", required: true, style: "width: 12rem",
+                      value: @anki_note_id)
                 input(type: "text", name: "field_name", class: "form-input form-input--small",
-                      placeholder: "Field name", required: true, style: "width: 12rem")
+                      placeholder: "Field name", required: true, style: "width: 12rem",
+                      value: @field_name)
                 button(type: "submit", class: "button button--small") { "Save to Anki" }
               end
             end
