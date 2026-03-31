@@ -4,7 +4,7 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
   TRANSFORMATION_LABELS = {
     "reading"   => "Reading — convert to hiragana",
     "translate" => "Translate — Japanese → English",
-    "furigana"  => "Furigana — annotate kanji with HTML <ruby> tags",
+    "furigana"  => "Furigana — annotate kanji as 漢字[よみ]",
     "custom"    => "Custom prompt…"
   }.freeze
 

@@ -5,7 +5,7 @@
 # Supported transformations:
 #   reading   — convert Japanese text to hiragana-only reading
 #   translate — translate Japanese text to English
-#   furigana  — annotate kanji with hiragana readings as HTML <ruby> tags
+#   furigana  — annotate kanji with hiragana readings using 漢字[よみ] format
 class NoteEnricher
   PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
 
@@ -25,10 +25,10 @@ class NoteEnricher
     PROMPT
 
     "furigana" => <<~PROMPT
-      Add furigana to the following Japanese text using HTML <ruby> tags.
-      Every kanji (or kanji compound) must be wrapped: <ruby>漢字<rt>かんじ</rt></ruby>
+      Add furigana to the following Japanese text using the format 漢字[よみ].
+      Every kanji (or kanji compound) must be annotated inline: e.g. 醜態[しゅうたい], 日本語[にほんご].
       Leave hiragana and katakana as-is.
-      Output only the annotated HTML, no explanation.
+      Output only the annotated text, no explanation.
 
       Input: %s
     PROMPT
