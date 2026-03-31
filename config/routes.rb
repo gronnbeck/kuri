@@ -114,7 +114,8 @@ Rails.application.routes.draw do
 
   resources :notes, only: [ :index, :show ] do
     member do
-      get :fields
+      get  :fields
+      post :push_to_anki
     end
   end
   resources :decks, only: [ :index, :new, :create, :update, :destroy ] do

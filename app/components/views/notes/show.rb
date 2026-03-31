@@ -9,6 +9,13 @@ class Views::Notes::Show < ApplicationView
     div(class: "page-header") do
       link_to "← Back to notes", helpers.notes_path
       h1 { "Note ##{@note.anki_id}" }
+      div(class: "page-header-actions") do
+        button_to "Push to Anki",
+          helpers.push_to_anki_note_path(@note.anki_id),
+          method: :post,
+          class: "button button--small",
+          data: { turbo: "false" }
+      end
     end
 
     div(class: "note-detail") do
