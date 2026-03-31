@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_31_154507) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_31_171942) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -295,6 +295,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_154507) do
     t.datetime "updated_at", null: false
     t.integer "verb_transformation_exercise_id", null: false
     t.index ["verb_transformation_exercise_id"], name: "idx_on_verb_transformation_exercise_id_2e9daa9a78"
+  end
+
+  create_table "walk_session_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "item_id", null: false
+    t.string "item_type", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "walk_session_id", null: false
+  end
+
+  create_table "walk_sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "inner_pause_ms", default: 2000, null: false
+    t.string "name"
+    t.integer "outer_pause_ms", default: 4000, null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "words", force: :cascade do |t|

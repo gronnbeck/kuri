@@ -81,6 +81,19 @@ Rails.application.routes.draw do
   end
   get "verb_audios/:id/audio", to: "verb_audios#audio", as: :verb_audio
 
+  resources :walk_sessions do
+    member do
+      post :generate
+      get  :audio
+    end
+    resources :walk_session_items, only: [ :create, :destroy ] do
+      member do
+        post :move_up
+        post :move_down
+      end
+    end
+  end
+
   resources :conversation_batches, only: [ :index, :new, :create, :show ]
   resources :verb_batches,         only: [ :index, :new, :create, :show ]
 
