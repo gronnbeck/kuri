@@ -1844,6 +1844,16 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
   font-size: 0.9rem;
 }
 
+.enrichment-target-picker {
+  margin-bottom: 0.5rem;
+}
+
+.enrichment-target-label {
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+}
+
 .form--inline {
   display: flex;
   gap: 0.5rem;

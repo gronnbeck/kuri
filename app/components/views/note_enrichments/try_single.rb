@@ -122,19 +122,26 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
 
             div(class: "enrichment-save-section") do
               h4 { "Save to note" }
-              p(class: "form-hint") { "Writes the result into the local note record. Use Resync on the Decks page to push it to Anki." }
+              p(class: "form-hint") { "Pick the target field, then save. Use Resync on the Decks page to push to Anki." }
+
+              div(class: "enrichment-load-fields enrichment-target-picker",
+                  style: @anki_note_id ? "" : "display:none",
+                  data: { fetch_note_fields_target: "targetFieldPicker" })
 
               form(action: helpers.save_to_note_note_enrichments_path, method: "post", class: "form form--inline") do
                 input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
                 input(type: "hidden", name: "value", value: @result)
+                input(type: "hidden", name: "anki_note_id", value: @anki_note_id,
+                      data: { fetch_note_fields_target: "hiddenSaveNoteId" })
+                input(type: "hidden", name: "field_name", value: @field_name,
+                      data: { fetch_note_fields_target: "hiddenTargetFieldName" })
 
-                input(type: "number", name: "anki_note_id", class: "form-input form-input--small",
-                      placeholder: "Note ID", required: true, style: "width: 12rem",
-                      value: @anki_note_id)
-                input(type: "text", name: "field_name", class: "form-input form-input--small",
-                      placeholder: "Field name", required: true, style: "width: 12rem",
-                      value: @field_name)
-                button(type: "submit", class: "button button--small") { "Save to note" }
+                span(class: "enrichment-target-label",
+                     data: { fetch_note_fields_target: "targetFieldLabel" }) do
+                  @field_name ? "→ #{@field_name}" : "← pick a field above"
+                end
+                button(type: "submit", class: "button button--small",
+                       disabled: @field_name.nil?) { "Save to note" }
               end
             end
           end
