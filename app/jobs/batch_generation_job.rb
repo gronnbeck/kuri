@@ -77,6 +77,7 @@ class BatchGenerationJob < ApplicationJob
         batch.increment!(:completed_count)
         used_requests << exercise.request_jp if exercise.respond_to?(:request_jp)
         used_verbs    << exercise.verb_jp    if exercise.respond_to?(:verb_jp)
+        AudioGenerationJob.perform_later(exercise.class.name, exercise.id)
         return
       rescue => e
         last_error = e
