@@ -63,7 +63,13 @@ class Views::AudioClips::Generate < ApplicationView
       ul(class: "audio-clip-list") do
         @sentences.each do |sentence|
           li(class: "audio-clip-item") do
-            div(class: "audio-clip-text jp") { sentence.text }
+            div(class: "audio-clip-header") do
+              div(class: "audio-clip-text jp") { sentence.text }
+              button_to "Delete all", helpers.sentence_path(sentence),
+                method: :delete,
+                data: { turbo_confirm: "Delete this sentence and all its clips?" },
+                class: "button button--danger button--sm"
+            end
             div(class: "audio-clip-voices") do
               sentence.clips.each do |clip|
                 div(class: "audio-clip-voice-row") do
@@ -74,6 +80,10 @@ class Views::AudioClips::Generate < ApplicationView
                     class: "audio-player",
                     preload: "none"
                   )
+                  button_to "✕", helpers.audio_clip_path(clip),
+                    method: :delete,
+                    data: { turbo_confirm: "Delete this clip?" },
+                    class: "button button--danger button--sm"
                 end
               end
             end

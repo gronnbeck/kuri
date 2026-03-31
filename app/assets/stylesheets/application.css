@@ -899,6 +899,13 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
   border-radius: 8px;
 }
 
+.audio-clip-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .audio-clip-text {
   font-size: 1.1rem;
 }
@@ -2082,4 +2089,71 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
 
 .muted {
   color: #888;
+}
+
+.button--sm {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8em;
+}
+
+.badge--audio {
+  background: #e8f4e8;
+  color: #2d7a2d;
+}
+
+.ce-field-value--context {
+  color: #666;
+  font-style: italic;
+}
+
+.text-xl {
+  font-size: 1.5rem;
+}
+
+.ce-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 760px;
+}
+
+.ce-list-item {
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
+.ce-list-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  gap: 1rem;
+}
+
+.ce-list-link:hover {
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.ce-list-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ce-list-text {
+  font-size: 0.95rem;
+}
+
+.ce-list-text--jp {
+  color: #555;
+}
+
+.ce-list-meta {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-shrink: 0;
 }

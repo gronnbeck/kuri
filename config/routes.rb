@@ -32,10 +32,22 @@ Rails.application.routes.draw do
   get "practice/sentence_patterns/exercise", to: "practice#sentence_patterns_exercise", as: :practice_sentence_patterns_exercise
   post "practice/sentence_patterns/exercise", to: "practice#check_sentence_pattern", as: :check_sentence_pattern
   get "practice/sentence_patterns", to: "practice#sentence_patterns"
-  get "audio_clips", to: "audio_clips#index"
-  get "audio_clips/generate", to: "audio_clips#generate", as: :audio_clips_generate
-  post "audio_clips/generate", to: "audio_clips#create", as: :audio_clips_create
-  get "audio_clips/:id/audio", to: "audio_clips#audio", as: :audio_audio_clip
+  get    "audio_clips",             to: "audio_clips#index"
+  get    "audio_clips/generate",    to: "audio_clips#generate",  as: :audio_clips_generate
+  post   "audio_clips/generate",    to: "audio_clips#create",    as: :audio_clips_create
+  get    "audio_clips/:id/audio",   to: "audio_clips#audio",     as: :audio_audio_clip
+  delete "audio_clips/:id",         to: "audio_clips#destroy",   as: :audio_clip
+  delete "sentences/:id",           to: "sentences#destroy",     as: :sentence
+
+  resources :phrase_cards, only: [ :index, :new, :show, :edit, :update, :destroy ] do
+    collection { post :generate }
+    member do
+      post :generate_audio
+      post :add_to_anki
+      post :archive
+      get  :audio
+    end
+  end
   resources :conversation_exercises do
     collection do
       post :generate
@@ -84,6 +96,14 @@ Rails.application.routes.draw do
   scope "/settings/listen", as: "settings_listen" do
     resources :actors
     resource :conversations, only: [ :show, :update ], controller: "settings/conversations" do
+      collection do
+        get  :fetch_decks
+        get  :fetch_note_types
+        get  :fetch_fields
+        post :test_connection
+      end
+    end
+    resource :phrases, only: [ :show, :update ], controller: "settings/phrases" do
       collection do
         get  :fetch_decks
         get  :fetch_note_types

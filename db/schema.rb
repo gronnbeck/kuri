@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_31_153414) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_31_154507) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -64,6 +64,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_153414) do
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.index ["conversation_exercise_id"], name: "index_anki_exports_on_conversation_exercise_id"
+  end
+
+  create_table "anki_phrase_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "deck_name"
+    t.json "field_mappings", default: {}
+    t.string "note_type"
+    t.datetime "updated_at", null: false
+    t.string "url"
   end
 
   create_table "anki_verb_settings", force: :cascade do |t|
@@ -199,6 +208,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_31_153414) do
     t.datetime "updated_at", null: false
     t.index ["anki_id"], name: "index_notes_on_anki_id", unique: true
     t.index ["deck_id"], name: "index_notes_on_deck_id"
+  end
+
+  create_table "phrase_anki_exports", force: :cascade do |t|
+    t.bigint "anki_note_id"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.integer "phrase_card_id", null: false
+    t.string "status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.index ["phrase_card_id"], name: "index_phrase_anki_exports_on_phrase_card_id"
+  end
+
+  create_table "phrase_cards", force: :cascade do |t|
+    t.string "anki_status", default: "not_added"
+    t.boolean "archived", default: false, null: false
+    t.text "context"
+    t.datetime "created_at", null: false
+    t.string "difficulty_level"
+    t.text "english"
+    t.text "hiragana"
+    t.text "japanese"
+    t.text "notes"
+    t.datetime "updated_at", null: false
   end
 
   create_table "sentences", force: :cascade do |t|

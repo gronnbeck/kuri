@@ -157,9 +157,33 @@ class Views::Settings::CardTemplates < ApplicationView
     }
   CSS
 
-  def initialize(conv_setting:, verb_setting:)
-    @conv_setting = conv_setting
-    @verb_setting = verb_setting
+  # ── Phrase templates ────────────────────────────────────────────────────────
+
+  PHRASE_FRONT = <<~HTML.freeze
+    <div class="kuri">
+      <div class="kuri-request">{{english}}</div>
+      {{#context}}<div class="kuri-en kuri-en--hint">{{context}}</div>{{/context}}
+      <div class="kuri-meta">
+        {{#difficulty}}<span class="kuri-badge">{{difficulty}}</span>{{/difficulty}}
+      </div>
+    </div>
+  HTML
+
+  PHRASE_BACK = <<~HTML.freeze
+    {{FrontSide}}
+    <hr class="kuri-divider">
+    <div class="kuri">
+      <div class="kuri-response">{{japanese}}</div>
+      {{#hiragana}}<div class="kuri-reading">{{hiragana}}</div>{{/hiragana}}
+      <div class="kuri-audio">{{audio}}</div>
+      {{#notes}}<div class="kuri-notes">{{notes}}</div>{{/notes}}
+    </div>
+  HTML
+
+  def initialize(conv_setting:, verb_setting:, phrase_setting:)
+    @conv_setting   = conv_setting
+    @verb_setting   = verb_setting
+    @phrase_setting = phrase_setting
   end
 
   def view_template
@@ -220,6 +244,14 @@ class Views::Settings::CardTemplates < ApplicationView
         blocks: [
           { label: "Front", content: apply_mappings(VERB_FRONT, @verb_setting) },
           { label: "Back",  content: apply_mappings(VERB_BACK,  @verb_setting) },
+          { label: "CSS",   content: SHARED_CSS }
+        ]
+      },
+      {
+        title:  "Phrase Cards",
+        blocks: [
+          { label: "Front", content: apply_mappings(PHRASE_FRONT, @phrase_setting) },
+          { label: "Back",  content: apply_mappings(PHRASE_BACK,  @phrase_setting) },
           { label: "CSS",   content: SHARED_CSS }
         ]
       }

@@ -31,4 +31,13 @@ class AudioClipsController < ApplicationController
     clip = Clip.find(params[:id])
     redirect_to rails_blob_url(clip.audio), allow_other_host: true
   end
+
+  def destroy
+    clip = Clip.find(params[:id])
+    sentence = clip.sentence
+    clip.audio.purge
+    clip.destroy
+    sentence.destroy if sentence.clips.none?
+    redirect_to audio_clips_generate_path, notice: "Clip deleted."
+  end
 end

@@ -4,8 +4,9 @@ module Settings
   class CardTemplatesController < ApplicationController
     def show
       render Views::Settings::CardTemplates.new(
-        conv_setting: AnkiConversationSetting.current,
-        verb_setting: AnkiVerbSetting.current
+        conv_setting:   AnkiConversationSetting.current,
+        verb_setting:   AnkiVerbSetting.current,
+        phrase_setting: AnkiPhraseSetting.current
       )
     end
   end
