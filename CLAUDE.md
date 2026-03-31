@@ -47,3 +47,7 @@ bin/importmap audit
 **CI pipeline** (`config/ci.rb`) runs: RuboCop → bundler-audit → importmap audit → Brakeman → `rails test` → `db:seed:replant`.
 
 **GitHub Actions** (`.github/workflows/ci.yml`) runs the full CI on PRs and pushes to main.
+
+## Workflow rules
+
+- Always run `bin/ci` and confirm it passes before pushing or committing.
