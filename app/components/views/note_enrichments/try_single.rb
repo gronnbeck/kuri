@@ -121,10 +121,10 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
             end
 
             div(class: "enrichment-save-section") do
-              h4 { "Save to Anki (optional)" }
-              p(class: "form-hint") { "Enter the note ID and field name to write this result back to Anki." }
+              h4 { "Save to note" }
+              p(class: "form-hint") { "Writes the result into the local note record. Use Resync on the Decks page to push it to Anki." }
 
-              form(action: helpers.save_to_anki_note_enrichments_path, method: "post", class: "form form--inline") do
+              form(action: helpers.save_to_note_note_enrichments_path, method: "post", class: "form form--inline") do
                 input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
                 input(type: "hidden", name: "value", value: @result)
 
@@ -134,7 +134,7 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
                 input(type: "text", name: "field_name", class: "form-input form-input--small",
                       placeholder: "Field name", required: true, style: "width: 12rem",
                       value: @field_name)
-                button(type: "submit", class: "button button--small") { "Save to Anki" }
+                button(type: "submit", class: "button button--small") { "Save to note" }
               end
             end
           end

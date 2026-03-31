@@ -76,21 +76,19 @@ class NoteEnrichmentsControllerTest < ActionDispatch::IntegrationTest
 
   # ── save_to_anki ─────────────────────────────────────────────────────────────
 
-  test "save_to_anki updates local note record and redirects to note page" do
-    stub_anki_update do
-      post save_to_anki_note_enrichments_path, params: {
-        anki_note_id: @note.anki_id,
-        field_name:   "Reading",
-        value:        "たべる"
-      }
-    end
+  test "save_to_note updates local note record and redirects to note page" do
+    post save_to_note_note_enrichments_path, params: {
+      anki_note_id: @note.anki_id,
+      field_name:   "Reading",
+      value:        "たべる"
+    }
 
     assert_redirected_to note_path(@note.anki_id)
     assert_equal "たべる", @note.reload.fields["Reading"]["value"]
   end
 
-  test "save_to_anki shows alert when note ID is missing" do
-    post save_to_anki_note_enrichments_path, params: {
+  test "save_to_note shows alert when note ID is missing" do
+    post save_to_note_note_enrichments_path, params: {
       field_name: "Reading",
       value:      "たべる"
     }
@@ -98,30 +96,13 @@ class NoteEnrichmentsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/missing/i, flash[:alert])
   end
 
-  test "save_to_anki shows alert when AnkiConnect is unavailable" do
-    original = AnkiConnect::Client.instance_method(:update_note_fields)
-    AnkiConnect::Client.define_method(:update_note_fields) do |*|
-      raise AnkiConnect::Client::ConnectionError, "connection refused"
-    end
-
-    post save_to_anki_note_enrichments_path, params: {
-      anki_note_id: @note.anki_id,
+  test "save_to_note shows alert when note is not found" do
+    post save_to_note_note_enrichments_path, params: {
+      anki_note_id: 99999999,
       field_name:   "Reading",
       value:        "たべる"
     }
     assert_redirected_to try_single_note_enrichments_path
-    assert_match(/unavailable/i, flash[:alert])
-  ensure
-    AnkiConnect::Client.define_method(:update_note_fields, original)
-  end
-
-  private
-
-  def stub_anki_update
-    original = AnkiConnect::Client.instance_method(:update_note_fields)
-    AnkiConnect::Client.define_method(:update_note_fields) { |*| nil }
-    yield
-  ensure
-    AnkiConnect::Client.define_method(:update_note_fields, original)
+    assert_match(/not found/i, flash[:alert])
   end
 end

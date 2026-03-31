@@ -37,8 +37,9 @@ class NoteEnrichmentsController < ApplicationController
     )
   end
 
-  # Save the enriched value back to an Anki note field.
-  def save_to_anki
+  # Save the enriched value to the local Note record.
+  # Use Resync (Decks page) to push the change to Anki afterwards.
+  def save_to_note
     note_id    = params[:anki_note_id].to_i
     field_name = params[:field_name].presence
     value      = params[:value].presence
@@ -48,19 +49,18 @@ class NoteEnrichmentsController < ApplicationController
       return
     end
 
-    client = AnkiConnect::Client.new
-    client.update_note_fields(note_id, { field_name => value })
-
-    # Keep the local copy in sync so the note show page reflects the change.
-    note = Note.find_by(anki_id: note_id)
-    if note&.fields&.key?(field_name)
-      note.fields[field_name]["value"] = value
-      note.save!
+    note = Note.find_by!(anki_id: note_id)
+    unless note.fields.key?(field_name)
+      redirect_to try_single_note_enrichments_path, alert: "Field '#{field_name}' not found on note #{note_id}."
+      return
     end
 
-    redirect_to note_path(note_id), notice: "Field '#{field_name}' updated."
-  rescue AnkiConnect::Client::ConnectionError => e
-    redirect_to try_single_note_enrichments_path, alert: "Anki unavailable: #{e.message}"
+    note.fields[field_name]["value"] = value
+    note.save!
+
+    redirect_to note_path(note_id), notice: "Field '#{field_name}' saved. Use Resync on the Decks page to push to Anki."
+  rescue ActiveRecord::RecordNotFound
+    redirect_to try_single_note_enrichments_path, alert: "Note #{note_id} not found — sync it first."
   rescue => e
     redirect_to try_single_note_enrichments_path, alert: "Failed: #{e.message}"
   end
