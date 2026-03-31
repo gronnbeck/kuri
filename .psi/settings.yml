@@ -1,0 +1,61 @@
+allowed-tools:
+  - list_exercises
+  - list_contexts
+  - search_exercises
+  - create_exercise
+
+custom-tools:
+  - name: list_exercises
+    description: >
+      List conversation exercises from Kuri.
+      Optionally filter by difficulty (n5, n4, n3, n2, n1) and/or context name.
+      Returns exercise pairs with their Japanese request/response and metadata.
+    executable: bin/kuri_list_exercises
+    params:
+      - name: difficulty
+        description: "JLPT level to filter by: n5, n4, n3, n2, or n1. Omit to get all levels."
+      - name: context
+        description: "Context/theme name to filter by (e.g. 'restaurant'). Omit for all contexts."
+      - name: limit
+        description: "Max exercises to return. Defaults to 100."
+
+  - name: list_contexts
+    description: >
+      List all contexts/themes in Kuri with the number of exercises each has.
+    executable: bin/kuri_list_contexts
+    params: []
+
+  - name: search_exercises
+    description: >
+      Search exercises by keyword in Japanese or English text.
+      Useful for checking whether a specific word or phrase is already covered.
+    executable: bin/kuri_search_exercises
+    params:
+      - name: query
+        description: "Word or phrase to search for (checked against Japanese and English fields)."
+
+  - name: create_exercise
+    description: >
+      Create a new conversation exercise card in Kuri.
+      Always check with search_exercises first to avoid duplicates.
+      Provide hiragana-only readings (no kanji, no katakana) for reading fields.
+    executable: bin/kuri_create_exercise
+    params:
+      - name: difficulty
+        description: "JLPT level: n5, n4, n3, n2, or n1. Required."
+      - name: context_name
+        description: "Context/theme label (e.g. 'restaurant'). Will be created if it doesn't exist."
+      - name: request_jp
+        description: "What is said TO the learner, in Japanese. Required."
+      - name: request_en
+        description: "Natural English translation of the request."
+      - name: request_reading
+        description: "Hiragana-only reading of request_jp (every character in hiragana, no kanji or katakana)."
+      - name: response_jp
+        description: "What the learner says back, in Japanese (polite ます/です form). Required."
+      - name: response_en
+        description: "Natural English translation of the response."
+      - name: response_reading
+        description: "Hiragana-only reading of response_jp."
+      - name: notes
+        description: "Optional brief English notes about grammar, vocabulary, or cultural context."

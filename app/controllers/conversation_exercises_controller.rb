@@ -20,12 +20,14 @@ class ConversationExercisesController < ApplicationController
     difficulty = params[:difficulty].presence || "n5"
     prompt     = params[:prompt].presence
 
-    context_name = context&.name || params[:context_name].presence || "general"
+    context_name = context&.name || "general"
     result = ConversationExerciseGenerator.call(
       context_name: context_name,
       difficulty:   difficulty,
-      prompt:       prompt
+      scenario:     prompt
     )
+
+    context ||= Context.find_or_create_by!(name: result.context_name) if result.context_name.present?
 
     @exercise = ConversationExercise.create!(
       context:          context,

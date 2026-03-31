@@ -72,6 +72,12 @@ Rails.application.routes.draw do
   resources :conversation_batches, only: [ :index, :new, :create, :show ]
   resources :verb_batches,         only: [ :index, :new, :create, :show ]
 
+  get  "sparring",              to: "sparring#index",            as: :sparring_index
+  get  "sparring/current",     to: "sparring#show",             as: :sparring
+  post "sparring",             to: "sparring#chat",             as: :sparring_chat
+  get  "sparring/new",         to: "sparring#new_conversation", as: :new_conversation_sparring
+  get  "sparring/:id/resume",  to: "sparring#resume",           as: :resume_sparring
+
   get "settings", to: "settings#index"
   get "settings/listen", to: "settings#listen", as: :settings_listen
   get "settings/listen/card_templates", to: "settings/card_templates#show", as: :settings_listen_card_templates

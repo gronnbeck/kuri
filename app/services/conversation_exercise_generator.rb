@@ -3,7 +3,7 @@
 class ConversationExerciseGenerator
   PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
 
-  Result = Struct.new(:request_jp, :request_en, :request_reading, :response_jp, :response_en, :response_reading, :notes, keyword_init: true)
+  Result = Struct.new(:request_jp, :request_en, :request_reading, :response_jp, :response_en, :response_reading, :notes, :context_name, keyword_init: true)
 
   PROMPT = <<~PROMPT
     Generate a short Japanese conversation exercise for a learner at JLPT %s level.
@@ -30,6 +30,7 @@ class ConversationExerciseGenerator
 
     Respond with JSON only — no markdown, no explanation.
     {
+      "context_name": "<short English label for this context, e.g. 'restaurant', 'pharmacy', 'train station'>",
       "request_jp": "<what is said TO the learner — in Japanese, short and natural>",
       "request_en": "<natural English translation of the request>",
       "request_reading": "<hiragana-only reading of request_jp — every character written in hiragana, no kanji or katakana>",
@@ -163,6 +164,7 @@ class ConversationExerciseGenerator
 
     data = extract_json(response["content"])
     Result.new(
+      context_name:     data["context_name"].to_s.strip.presence,
       request_jp:       data["request_jp"].to_s.strip,
       request_en:       data["request_en"].to_s.strip,
       request_reading:  data["request_reading"].to_s.strip.presence,

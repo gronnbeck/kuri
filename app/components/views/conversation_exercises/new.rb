@@ -45,13 +45,13 @@ class Views::ConversationExercises::New < ApplicationView
           end
 
           div(class: "form-group") do
-            label(for: "prompt") { "Additional instructions (optional)" }
+            label(for: "prompt") { "Instructions (optional)" }
             input(
               type: "text",
               name: "prompt",
               id: "prompt",
               class: "form-input",
-              placeholder: "e.g. about ordering ramen"
+              placeholder: "e.g. ordering ramen at a restaurant"
             )
           end
 

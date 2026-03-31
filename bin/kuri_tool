@@ -1,0 +1,128 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# psi custom tool CLI for Kuri.
+# Called by psi with the subcommand as ARGV[0] and JSON params on stdin.
+# Outputs a JSON result on the last line of stdout.
+
+ENV["RAILS_ENV"] ||= "development"
+require_relative "../config/environment"
+
+subcommand = ARGV[0]
+input      = JSON.parse($stdin.read) rescue {}
+
+def json_out(data)
+  puts JSON.generate(data)
+end
+
+case subcommand
+when "list_exercises"
+  scope = ConversationExercise.includes(:context).where(archived: false)
+  scope = scope.where(difficulty_level: input["difficulty"]) if input["difficulty"].present?
+  if input["context"].present?
+    scope = scope.joins(:context).where(contexts: { name: input["context"] })
+  end
+  limit = (input["limit"] || 100).to_i
+  exercises = scope.order(:difficulty_level, :created_at).limit(limit)
+
+  json_out(
+    total: scope.count,
+    returned: exercises.size,
+    exercises: exercises.map do |ex|
+      {
+        id:          ex.id,
+        difficulty:  ex.difficulty_level,
+        context:     ex.context&.name,
+        request_jp:  ex.request_jp,
+        request_en:  ex.request_en,
+        response_jp: ex.response_jp,
+        response_en: ex.response_en,
+        notes:       ex.notes
+      }
+    end
+  )
+
+when "list_contexts"
+  contexts = Context.left_joins(:conversation_exercises)
+    .where(conversation_exercises: { archived: false })
+    .group("contexts.id", "contexts.name")
+    .select("contexts.id, contexts.name, COUNT(conversation_exercises.id) AS exercise_count")
+    .order(:name)
+
+  json_out(
+    contexts: contexts.map { |c| { id: c.id, name: c.name, exercise_count: c.exercise_count.to_i } }
+  )
+
+when "search_exercises"
+  query = input["query"].to_s.strip
+  if query.blank?
+    json_out(error: "query param is required")
+    exit 1
+  end
+
+  pattern = "%#{query}%"
+  exercises = ConversationExercise.includes(:context).where(archived: false).where(
+    "request_jp LIKE ? OR response_jp LIKE ? OR request_en LIKE ? OR response_en LIKE ?",
+    pattern, pattern, pattern, pattern
+  ).order(:difficulty_level, :created_at).limit(50)
+
+  json_out(
+    query:     query,
+    matches:   exercises.size,
+    exercises: exercises.map do |ex|
+      {
+        id:          ex.id,
+        difficulty:  ex.difficulty_level,
+        context:     ex.context&.name,
+        request_jp:  ex.request_jp,
+        request_en:  ex.request_en,
+        response_jp: ex.response_jp,
+        response_en: ex.response_en
+      }
+    end
+  )
+
+when "create_exercise"
+  difficulty = input["difficulty"].to_s.strip.downcase
+  unless %w[n5 n4 n3 n2 n1].include?(difficulty)
+    json_out(error: "difficulty must be one of: n5, n4, n3, n2, n1")
+    exit 1
+  end
+
+  %w[request_jp response_jp].each do |field|
+    if input[field].blank?
+      json_out(error: "#{field} is required")
+      exit 1
+    end
+  end
+
+  context = Context.find_or_create_by!(name: input["context_name"].strip) if input["context_name"].present?
+
+  exercise = ConversationExercise.create!(
+    context:          context,
+    difficulty_level: difficulty,
+    request_jp:       input["request_jp"].to_s.strip,
+    request_en:       input["request_en"].to_s.strip.presence,
+    request_reading:  input["request_reading"].to_s.strip.presence,
+    response_jp:      input["response_jp"].to_s.strip,
+    response_en:      input["response_en"].to_s.strip.presence,
+    response_reading: input["response_reading"].to_s.strip.presence,
+    notes:            input["notes"].to_s.strip.presence
+  )
+
+  json_out(
+    created: true,
+    id:          exercise.id,
+    difficulty:  exercise.difficulty_level,
+    context:     exercise.context&.name,
+    request_jp:  exercise.request_jp,
+    request_en:  exercise.request_en,
+    response_jp: exercise.response_jp,
+    response_en: exercise.response_en,
+    notes:       exercise.notes
+  )
+
+else
+  json_out(error: "Unknown subcommand: #{subcommand.inspect}")
+  exit 1
+end
