@@ -34,6 +34,10 @@ module AnkiConnect
       request("notesInfo", notes: ids)
     end
 
+    def update_note_fields(note_id, fields)
+      request("updateNoteFields", note: { id: note_id, fields: fields })
+    end
+
     def add_note(deck:, note_type:, fields:, audio: [], tags: [])
       note = {
         deckName:  deck,

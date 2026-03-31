@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_154660) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_31_050857) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -162,6 +162,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_154660) do
     t.index ["name"], name: "index_decks_on_name", unique: true
   end
 
+  create_table "note_enrichment_batches", force: :cascade do |t|
+    t.integer "approved_count", default: 0
+    t.datetime "created_at", null: false
+    t.string "deck_name"
+    t.string "destination_field"
+    t.integer "enriched_count", default: 0
+    t.integer "failed_count", default: 0
+    t.string "note_type"
+    t.integer "pushed_count", default: 0
+    t.string "source_field"
+    t.string "status"
+    t.integer "total", default: 0
+    t.string "transformation"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "note_enrichments", force: :cascade do |t|
+    t.integer "anki_note_id", limit: 8
+    t.datetime "created_at", null: false
+    t.text "enriched_value"
+    t.string "error_message"
+    t.integer "note_enrichment_batch_id", null: false
+    t.text "source_value"
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.index ["note_enrichment_batch_id"], name: "index_note_enrichments_on_note_enrichment_batch_id"
+  end
+
   create_table "notes", force: :cascade do |t|
     t.bigint "anki_id", null: false
     t.datetime "created_at", null: false
@@ -252,6 +280,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_154660) do
   add_foreign_key "conversation_audios", "conversation_exercises"
   add_foreign_key "conversation_exercises", "contexts"
   add_foreign_key "conversation_feedbacks", "conversation_exercises"
+  add_foreign_key "note_enrichments", "note_enrichment_batches"
   add_foreign_key "notes", "decks"
   add_foreign_key "verb_anki_exports", "verb_transformation_exercises"
   add_foreign_key "verb_audios", "actors"

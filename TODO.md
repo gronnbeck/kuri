@@ -35,6 +35,22 @@ Add a way to enhance notes already in Anki by transforming one field and writing
 - Kuri fetches matching notes from AnkiConnect, runs the transformation via AI, and updates the notes in place
 - Should work across decks and note types
 
+## Prompt-Only Conversation Card Generation
+
+A dedicated page for generating a single conversation card from a free-form prompt, without selecting a context.
+
+- User sets JLPT level and writes a free-form prompt (e.g. "asking a pharmacist about a medicine")
+- Still follows all system rules (learner is always the customer/guest, not the service worker)
+- Lives at its own URL so it's easy to reach without going through the batch flow
+
+## Derive New Notes from Existing Ones
+
+Create new Anki cards by reusing content (sentences, audio) already in existing exercises.
+
+- Check whether a word appearing in an exercise sentence already exists in Anki
+- If not, use the sentence, audio, and exercise data as the basis for a new card
+- Useful for building vocabulary cards out of conversation/verb exercise sentences
+
 ## Conversation Card Design — Responsive Fix
 
 The CSS written for the Kuri Anki deck template is not responsive and breaks layout on small screens (e.g. iPhone).

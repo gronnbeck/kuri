@@ -94,6 +94,20 @@ Rails.application.routes.draw do
       end
     end
   end
+  resources :note_enrichment_batches, only: [ :index, :new, :create, :show ] do
+    member do
+      post :approve_all
+      post :reject_all
+      post :push
+    end
+    resources :note_enrichments, only: [] do
+      member do
+        post :approve
+        post :reject
+      end
+    end
+  end
+
   resources :notes, only: [ :index, :show ]
   resources :decks, only: [ :index, :new, :create, :update, :destroy ] do
     collection do
