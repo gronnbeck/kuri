@@ -34,17 +34,23 @@ class NoteEnricher
     PROMPT
   }.freeze
 
-  def self.call(transformation:, source_value:)
-    new(transformation: transformation, source_value: source_value).call
+  def self.call(transformation:, source_value:, custom_prompt: nil)
+    new(transformation: transformation, source_value: source_value, custom_prompt: custom_prompt).call
   end
 
-  def initialize(transformation:, source_value:)
-    @transformation = transformation
-    @source_value   = source_value
+  def initialize(transformation:, source_value:, custom_prompt: nil)
+    @transformation  = transformation
+    @source_value    = source_value
+    @custom_prompt   = custom_prompt
   end
 
   def call
-    prompt = format(PROMPTS.fetch(@transformation), @source_value)
+    prompt = if @transformation == "custom"
+      raise "Custom prompt is required." if @custom_prompt.blank?
+      "#{@custom_prompt}\n\nInput: #{@source_value}"
+    else
+      format(PROMPTS.fetch(@transformation), @source_value)
+    end
     stdout, stderr = run_psi(prompt)
     lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
 

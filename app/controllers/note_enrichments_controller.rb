@@ -7,6 +7,7 @@ class NoteEnrichmentsController < ApplicationController
   # the result back to an Anki note field.
   def try_single
     @transformation  = params[:transformation].presence || "reading"
+    @custom_prompt   = params[:custom_prompt].to_s
     @source_text     = params[:source_text].to_s
     @anki_note_id    = params[:anki_note_id].presence
     @field_name      = params[:field_name].presence
@@ -15,7 +16,11 @@ class NoteEnrichmentsController < ApplicationController
 
     if request.post? && @source_text.present?
       begin
-        @result = NoteEnricher.call(transformation: @transformation, source_value: @source_text)
+        @result = NoteEnricher.call(
+          transformation: @transformation,
+          source_value:   @source_text,
+          custom_prompt:  @custom_prompt.presence
+        )
       rescue => e
         @error = e.message
       end
@@ -23,6 +28,7 @@ class NoteEnrichmentsController < ApplicationController
 
     render Views::NoteEnrichments::TrySingle.new(
       transformation: @transformation,
+      custom_prompt:  @custom_prompt,
       source_text:    @source_text,
       anki_note_id:   @anki_note_id,
       field_name:     @field_name,

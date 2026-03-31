@@ -4,11 +4,14 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
   TRANSFORMATION_LABELS = {
     "reading"   => "Reading — convert to hiragana",
     "translate" => "Translate — Japanese → English",
-    "furigana"  => "Furigana — annotate kanji with HTML <ruby> tags"
+    "furigana"  => "Furigana — annotate kanji with HTML <ruby> tags",
+    "custom"    => "Custom prompt…"
   }.freeze
 
-  def initialize(transformation:, source_text:, result:, error:, anki_note_id: nil, field_name: nil)
+  def initialize(transformation:, source_text:, result:, error:,
+                 custom_prompt: nil, anki_note_id: nil, field_name: nil)
     @transformation = transformation
+    @custom_prompt  = custom_prompt
     @source_text    = source_text
     @anki_note_id   = anki_note_id
     @field_name     = field_name
@@ -27,14 +30,18 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
 
     div(class: "exercise-content") do
       div(class: "exercise-section") do
-        form(action: helpers.try_single_note_enrichments_path, method: "post", class: "form") do
+        form(action: helpers.try_single_note_enrichments_path, method: "post", class: "form",
+             data: { controller: "toggle-field",
+                     toggle_field_show_value: "custom",
+                     toggle_field_target_param: "transformation" }) do
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
           input(type: "hidden", name: "anki_note_id", value: @anki_note_id) if @anki_note_id
           input(type: "hidden", name: "field_name", value: @field_name) if @field_name
 
           div(class: "form-row") do
             label(class: "form-label") { "Transformation" }
-            select(name: "transformation", class: "form-input") do
+            select(name: "transformation", class: "form-input",
+                   data: { toggle_field_target: "select", action: "change->toggle-field#toggle" }) do
               TRANSFORMATION_LABELS.each do |value, label|
                 if value == @transformation
                   option(value: value, selected: true) { label }
@@ -45,10 +52,18 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
             end
           end
 
+          div(class: "form-row",
+              data: { toggle_field_target: "field" },
+              style: @transformation == "custom" ? "" : "display:none") do
+            label(class: "form-label") { "Prompt" }
+            textarea(name: "custom_prompt", class: "form-input", rows: "3",
+                     placeholder: "e.g. Use this word in a short example sentence in Japanese.") { @custom_prompt }
+          end
+
           div(class: "form-row") do
             label(class: "form-label") { "Source text" }
             textarea(name: "source_text", class: "form-input", rows: "4",
-                     placeholder: "Paste Japanese text here…") { @source_text }
+                     placeholder: "Paste text here…") { @source_text }
           end
 
           div(class: "form-actions") do
