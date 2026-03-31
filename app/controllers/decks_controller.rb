@@ -30,8 +30,13 @@ class DecksController < ApplicationController
   end
 
   def sync
-    AnkiSyncJob.perform_later
-    redirect_to decks_path, notice: "Sync queued."
+    AnkiSyncJob.perform_later(mode: :fetch_new)
+    redirect_to decks_path, notice: "Fetching new notes…"
+  end
+
+  def resync
+    AnkiSyncJob.perform_later(mode: :resync)
+    redirect_to decks_path, notice: "Resyncing all notes…"
   end
 
   def destroy

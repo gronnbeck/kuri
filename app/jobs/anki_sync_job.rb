@@ -3,30 +3,32 @@
 class AnkiSyncJob < ApplicationJob
   queue_as :default
 
-  def perform
+  # mode: :fetch_new — import only notes not yet in the local DB (default)
+  #       :resync    — import new notes AND update fields/tags on existing ones
+  def perform(mode: :fetch_new)
     client = AnkiConnect::Client.new
 
     Deck.sync_enabled.each do |deck|
-      sync_deck(client, deck)
+      sync_deck(client, deck, mode: mode.to_sym)
       deck.update!(last_synced_at: Time.current)
     end
   end
 
   private
 
-  def sync_deck(client, deck)
-    all_ids = client.find_notes(deck: deck.name)
+  def sync_deck(client, deck, mode:)
+    all_ids      = client.find_notes(deck: deck.name)
     existing_ids = deck.notes.where(anki_id: all_ids).pluck(:anki_id)
-    new_ids = all_ids - existing_ids
+    new_ids      = all_ids - existing_ids
 
-    return if new_ids.empty?
+    ids_to_fetch = mode == :resync ? all_ids : new_ids
+    return if ids_to_fetch.empty?
 
-    client.notes_info(ids: new_ids).each do |data|
-      deck.notes.create!(
-        anki_id: data["noteId"],
-        fields: data["fields"],
-        tags: data["tags"]
-      )
+    client.notes_info(ids: ids_to_fetch).each do |data|
+      note = deck.notes.find_or_initialize_by(anki_id: data["noteId"])
+      note.fields = data["fields"]
+      note.tags   = data["tags"]
+      note.save!
     end
   end
 end

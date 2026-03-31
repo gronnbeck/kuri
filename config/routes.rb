@@ -116,6 +116,7 @@ Rails.application.routes.draw do
   resources :decks, only: [ :index, :new, :create, :update, :destroy ] do
     collection do
       post :sync
+      post :resync
     end
   end
 end

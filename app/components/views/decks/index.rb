@@ -11,7 +11,8 @@ class Views::Decks::Index < ApplicationView
     div(class: "page-header") do
       h1 { "Decks" }
       div(class: "header-actions") do
-        button_to "Sync now", helpers.sync_decks_path, method: :post, class: "button button--secondary"
+        button_to "Resync all", helpers.resync_decks_path, method: :post, class: "button button--ghost"
+        button_to "Fetch new", helpers.sync_decks_path, method: :post, class: "button button--ghost"
         a(href: helpers.new_deck_path, class: "button") { "Add deck" }
       end
     end
