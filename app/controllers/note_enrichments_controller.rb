@@ -50,7 +50,15 @@ class NoteEnrichmentsController < ApplicationController
 
     client = AnkiConnect::Client.new
     client.update_note_fields(note_id, { field_name => value })
-    redirect_to try_single_note_enrichments_path, notice: "Saved to Anki note #{note_id} field '#{field_name}'."
+
+    # Keep the local copy in sync so the note show page reflects the change.
+    note = Note.find_by(anki_id: note_id)
+    if note&.fields&.key?(field_name)
+      note.fields[field_name]["value"] = value
+      note.save!
+    end
+
+    redirect_to note_path(note_id), notice: "Field '#{field_name}' updated."
   rescue AnkiConnect::Client::ConnectionError => e
     redirect_to try_single_note_enrichments_path, alert: "Anki unavailable: #{e.message}"
   rescue => e

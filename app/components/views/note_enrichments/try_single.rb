@@ -56,8 +56,10 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
              data: { controller: "toggle-field",
                      toggle_field_show_value: "custom" }) do
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
-          input(type: "hidden", name: "anki_note_id", value: @anki_note_id) if @anki_note_id
-          input(type: "hidden", name: "field_name", value: @field_name) if @field_name
+          input(type: "hidden", name: "anki_note_id", value: @anki_note_id,
+                data: { fetch_note_fields_target: "hiddenNoteId" })
+          input(type: "hidden", name: "field_name", value: @field_name,
+                data: { fetch_note_fields_target: "hiddenFieldName" })
 
           div(class: "form-row") do
             label(class: "form-label") { "Transformation" }
