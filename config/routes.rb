@@ -112,7 +112,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :notes, only: [ :index, :show ]
+  resources :notes, only: [ :index, :show ] do
+    member do
+      get :fields
+    end
+  end
   resources :decks, only: [ :index, :new, :create, :update, :destroy ] do
     collection do
       post :sync

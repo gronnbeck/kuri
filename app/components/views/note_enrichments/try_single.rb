@@ -29,11 +29,32 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
     end
 
     div(class: "exercise-content") do
-      div(class: "exercise-section") do
+      # Outer wrapper owns fetch-note-fields so both the picker and the
+      # source textarea are reachable as targets of the same controller.
+      div(class: "exercise-section",
+          data: { controller: "fetch-note-fields" }) do
+        # ── Load from Anki ───────────────────────────────────────────────
+        div(class: "enrichment-load-section") do
+          div(class: "enrichment-load-header") { "Load source from Anki note" }
+          div(class: "form--inline") do
+            input(type: "number", class: "form-input form-input--small",
+                  placeholder: "Note ID",
+                  style: "width: 12rem",
+                  value: @anki_note_id,
+                  data: { fetch_note_fields_target: "noteId" })
+            button(type: "button", class: "button button--small button--ghost",
+                   data: { action: "click->fetch-note-fields#fetch" }) { "Fetch fields" }
+          end
+          div(class: "enrichment-load-fields", style: "display:none",
+              data: { fetch_note_fields_target: "fieldPicker" })
+          span(class: "enrichment-load-error",
+               data: { fetch_note_fields_target: "error" })
+        end
+
+        # ── Transform form ───────────────────────────────────────────────
         form(action: helpers.try_single_note_enrichments_path, method: "post", class: "form",
              data: { controller: "toggle-field",
-                     toggle_field_show_value: "custom",
-                     toggle_field_target_param: "transformation" }) do
+                     toggle_field_show_value: "custom" }) do
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
           input(type: "hidden", name: "anki_note_id", value: @anki_note_id) if @anki_note_id
           input(type: "hidden", name: "field_name", value: @field_name) if @field_name
@@ -63,7 +84,8 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
           div(class: "form-row") do
             label(class: "form-label") { "Source text" }
             textarea(name: "source_text", class: "form-input", rows: "4",
-                     placeholder: "Paste text here…") { @source_text }
+                     placeholder: "Paste text here…",
+                     data: { fetch_note_fields_target: "source" }) { @source_text }
           end
 
           div(class: "form-actions") do

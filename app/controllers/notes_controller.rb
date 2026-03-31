@@ -18,4 +18,12 @@ class NotesController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     redirect_to notes_path, alert: "Note not found."
   end
+
+  def fields
+    note = Note.find_by!(anki_id: params[:id])
+    fields = note.fields.transform_values { |f| f["value"].to_s }
+    render json: { note_id: note.anki_id, fields: fields }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Note #{params[:id]} not found. Make sure it has been synced." }, status: :not_found
+  end
 end

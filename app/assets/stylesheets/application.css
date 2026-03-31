@@ -1887,3 +1887,40 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.enrichment-load-section {
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.enrichment-load-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+}
+
+.enrichment-load-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.enrichment-load-error {
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
+.button--active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
