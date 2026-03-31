@@ -9,14 +9,16 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
   }.freeze
 
   def initialize(transformation:, source_text:, result:, error:,
-                 custom_prompt: nil, anki_note_id: nil, field_name: nil)
-    @transformation = transformation
-    @custom_prompt  = custom_prompt
-    @source_text    = source_text
-    @anki_note_id   = anki_note_id
-    @field_name     = field_name
-    @result         = result
-    @error          = error
+                 custom_prompt: nil, anki_note_id: nil, field_name: nil,
+                 target_field_name: nil)
+    @transformation    = transformation
+    @custom_prompt     = custom_prompt
+    @source_text       = source_text
+    @anki_note_id      = anki_note_id
+    @field_name        = field_name
+    @target_field_name = target_field_name
+    @result            = result
+    @error             = error
   end
 
   def view_template
@@ -29,13 +31,13 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
     end
 
     div(class: "exercise-content") do
-      # Outer wrapper owns fetch-note-fields so both the picker and the
-      # source textarea are reachable as targets of the same controller.
+      # Outer wrapper owns fetch-note-fields so all targets are reachable
+      # from the same controller instance.
       div(class: "exercise-section",
           data: { controller: "fetch-note-fields" }) do
-        # ── Load from Anki ───────────────────────────────────────────────
+        # ── Load from Anki ─────────────────────────────────────────────────
         div(class: "enrichment-load-section") do
-          div(class: "enrichment-load-header") { "Load source from Anki note" }
+          div(class: "enrichment-load-header") { "Load from Anki note" }
           div(class: "form--inline") do
             input(type: "number", class: "form-input form-input--small",
                   placeholder: "Note ID",
@@ -45,21 +47,38 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
             button(type: "button", class: "button button--small button--ghost",
                    data: { action: "click->fetch-note-fields#fetch" }) { "Fetch fields" }
           end
-          div(class: "enrichment-load-fields", style: "display:none",
-              data: { fetch_note_fields_target: "fieldPicker" })
+
+          div(class: "enrichment-load-pickers", style: "display:none",
+              data: { fetch_note_fields_target: "pickersWrapper" }) do
+            div(class: "enrichment-picker-row") do
+              span(class: "enrichment-picker-label") { "Source:" }
+              div(class: "enrichment-load-fields",
+                  data: { fetch_note_fields_target: "fieldPicker" })
+            end
+            div(class: "enrichment-picker-row") do
+              span(class: "enrichment-picker-label") { "Save to:" }
+              div(class: "enrichment-load-fields enrichment-target-picker",
+                  data: { fetch_note_fields_target: "targetFieldPicker" })
+            end
+          end
+
           span(class: "enrichment-load-error",
                data: { fetch_note_fields_target: "error" })
         end
 
-        # ── Transform form ───────────────────────────────────────────────
-        form(action: helpers.try_single_note_enrichments_path, method: "post", class: "form",
-             data: { controller: "toggle-field",
+        # ── Transform form ─────────────────────────────────────────────────
+        form(action: helpers.try_single_note_enrichments_path, method: "post",
+             class: "form",
+             data: { turbo: "false",
+                     controller: "toggle-field",
                      toggle_field_show_value: "custom" }) do
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
           input(type: "hidden", name: "anki_note_id", value: @anki_note_id,
                 data: { fetch_note_fields_target: "hiddenNoteId" })
           input(type: "hidden", name: "field_name", value: @field_name,
                 data: { fetch_note_fields_target: "hiddenFieldName" })
+          input(type: "hidden", name: "target_field_name", value: @target_field_name,
+                data: { fetch_note_fields_target: "hiddenTargetFieldName" })
 
           div(class: "form-row") do
             label(class: "form-label") { "Transformation" }
@@ -122,26 +141,24 @@ class Views::NoteEnrichments::TrySingle < ApplicationView
 
             div(class: "enrichment-save-section") do
               h4 { "Save to note" }
-              p(class: "form-hint") { "Pick the target field, then save. Use Resync on the Decks page to push to Anki." }
+              p(class: "form-hint") { "Writes the result into the local note record. Use Resync on the Decks page to push to Anki." }
 
-              div(class: "enrichment-load-fields enrichment-target-picker",
-                  style: @anki_note_id ? "" : "display:none",
-                  data: { fetch_note_fields_target: "targetFieldPicker" })
-
-              form(action: helpers.save_to_note_note_enrichments_path, method: "post", class: "form form--inline") do
+              form(action: helpers.save_to_note_note_enrichments_path, method: "post",
+                   class: "form form--inline",
+                   data: { turbo: "false" }) do
                 input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
                 input(type: "hidden", name: "value", value: @result)
                 input(type: "hidden", name: "anki_note_id", value: @anki_note_id,
                       data: { fetch_note_fields_target: "hiddenSaveNoteId" })
-                input(type: "hidden", name: "field_name", value: @field_name,
-                      data: { fetch_note_fields_target: "hiddenTargetFieldName" })
+                input(type: "hidden", name: "field_name", value: @target_field_name,
+                      data: { fetch_note_fields_target: "hiddenSaveFieldName" })
 
                 span(class: "enrichment-target-label",
                      data: { fetch_note_fields_target: "targetFieldLabel" }) do
-                  @field_name ? "→ #{@field_name}" : "← pick a field above"
+                  @target_field_name ? "→ #{@target_field_name}" : "← pick 'Save to' field above"
                 end
                 button(type: "submit", class: "button button--small",
-                       disabled: @field_name.nil?) { "Save to note" }
+                       disabled: @target_field_name.nil?) { "Save to note" }
               end
             end
           end

@@ -6,13 +6,14 @@ class NoteEnrichmentsController < ApplicationController
   # Single-note enrichment: transform one piece of text and optionally save
   # the result back to an Anki note field.
   def try_single
-    @transformation  = params[:transformation].presence || "reading"
-    @custom_prompt   = params[:custom_prompt].to_s
-    @source_text     = params[:source_text].to_s
-    @anki_note_id    = params[:anki_note_id].presence
-    @field_name      = params[:field_name].presence
-    @result          = nil
-    @error           = nil
+    @transformation    = params[:transformation].presence || "reading"
+    @custom_prompt     = params[:custom_prompt].to_s
+    @source_text       = params[:source_text].to_s
+    @anki_note_id      = params[:anki_note_id].presence
+    @field_name        = params[:field_name].presence
+    @target_field_name = params[:target_field_name].presence
+    @result            = nil
+    @error             = nil
 
     if request.post? && @source_text.present?
       begin
@@ -27,13 +28,14 @@ class NoteEnrichmentsController < ApplicationController
     end
 
     render Views::NoteEnrichments::TrySingle.new(
-      transformation: @transformation,
-      custom_prompt:  @custom_prompt,
-      source_text:    @source_text,
-      anki_note_id:   @anki_note_id,
-      field_name:     @field_name,
-      result:         @result,
-      error:          @error
+      transformation:    @transformation,
+      custom_prompt:     @custom_prompt,
+      source_text:       @source_text,
+      anki_note_id:      @anki_note_id,
+      field_name:        @field_name,
+      target_field_name: @target_field_name,
+      result:            @result,
+      error:             @error
     )
   end
 

@@ -6,29 +6,37 @@ import { Controller } from "@hotwired/stimulus"
 //
 // Targets:
 //   noteId            — input where the user types the note ID
+//   pickersWrapper    — wraps both pickers; shown after a successful fetch
 //   fieldPicker       — container for source field buttons
-//   targetFieldPicker — container for target field buttons (in save section)
+//   targetFieldPicker — container for target field buttons
 //   targetFieldLabel  — span showing the currently selected target field name
 //   source            — the textarea to populate with source value
 //   error             — element to show error messages
 //   hiddenNoteId          — hidden input carrying note ID through Transform POST
 //   hiddenFieldName       — hidden input carrying source field name through Transform POST
+//   hiddenTargetFieldName — hidden input carrying target field name through Transform POST
 //   hiddenSaveNoteId      — hidden input carrying note ID in the save form
-//   hiddenTargetFieldName — hidden input carrying target field name in the save form
+//   hiddenSaveFieldName   — hidden input carrying target field name in the save form
 export default class extends Controller {
   static targets = [
-    "noteId", "fieldPicker", "targetFieldPicker", "targetFieldLabel",
+    "noteId", "pickersWrapper", "fieldPicker", "targetFieldPicker", "targetFieldLabel",
     "source", "error",
-    "hiddenNoteId", "hiddenFieldName",
-    "hiddenSaveNoteId", "hiddenTargetFieldName"
+    "hiddenNoteId", "hiddenFieldName", "hiddenTargetFieldName",
+    "hiddenSaveNoteId", "hiddenSaveFieldName"
   ]
+
+  connect() {
+    // Auto-fetch fields if the page was rendered with a note ID already filled
+    // (e.g. after a Transform POST carries the note ID through).
+    if (this.hasNoteIdTarget && this.noteIdTarget.value.trim()) {
+      this.fetch()
+    }
+  }
 
   async fetch() {
     const id = this.noteIdTarget.value.trim()
     if (!id) return
 
-    this.fieldPickerTarget.innerHTML = "<span style='color:#888;font-size:0.85rem'>Loading…</span>"
-    this.fieldPickerTarget.style.display = ""
     this.errorTarget.textContent = ""
 
     try {
@@ -37,21 +45,27 @@ export default class extends Controller {
 
       if (!res.ok) {
         this.errorTarget.textContent = data.error || "Failed to fetch note."
-        this.fieldPickerTarget.style.display = "none"
+        if (this.hasPickersWrapperTarget) this.pickersWrapperTarget.style.display = "none"
         return
       }
 
       if (this.hasHiddenNoteIdTarget) this.hiddenNoteIdTarget.value = id
       if (this.hasHiddenSaveNoteIdTarget) this.hiddenSaveNoteIdTarget.value = id
 
+      // Show the pickers wrapper
+      if (this.hasPickersWrapperTarget) this.pickersWrapperTarget.style.display = ""
+
       // Source picker — only non-empty fields
       this.fieldPickerTarget.innerHTML = ""
+      // Pre-select the field that was active when the page loaded (if any)
+      const preselectedSource = this.hasHiddenFieldNameTarget ? this.hiddenFieldNameTarget.value : ""
       Object.entries(data.fields).forEach(([name, value]) => {
         if (!value) return
         const btn = document.createElement("button")
         btn.type = "button"
         btn.className = "button button--small button--ghost"
         btn.textContent = name
+        if (name === preselectedSource) btn.classList.add("button--active")
         btn.addEventListener("click", () => {
           this.sourceTarget.value = value
           if (this.hasHiddenFieldNameTarget) this.hiddenFieldNameTarget.value = name
@@ -64,17 +78,19 @@ export default class extends Controller {
       // Target picker — all fields (the destination for the enriched result)
       if (this.hasTargetFieldPickerTarget) {
         this.targetFieldPickerTarget.innerHTML = ""
-        this.targetFieldPickerTarget.style.display = ""
+        const preselectedTarget = this.hasHiddenTargetFieldNameTarget ? this.hiddenTargetFieldNameTarget.value : ""
         Object.entries(data.fields).forEach(([name, _value]) => {
           const btn = document.createElement("button")
           btn.type = "button"
           btn.className = "button button--small button--ghost"
           btn.textContent = name
+          if (name === preselectedTarget) btn.classList.add("button--active")
           btn.addEventListener("click", () => {
             if (this.hasHiddenTargetFieldNameTarget) this.hiddenTargetFieldNameTarget.value = name
+            if (this.hasHiddenSaveFieldNameTarget) this.hiddenSaveFieldNameTarget.value = name
             if (this.hasTargetFieldLabelTarget) this.targetFieldLabelTarget.textContent = `→ ${name}`
             // enable the save button
-            const saveBtn = this.targetFieldPickerTarget.closest(".enrichment-save-section")?.querySelector("button[type='submit']")
+            const saveBtn = this.element.querySelector(".enrichment-save-section button[type='submit']")
             if (saveBtn) saveBtn.disabled = false
             this.targetFieldPickerTarget.querySelectorAll("button").forEach(b => b.classList.remove("button--active"))
             btn.classList.add("button--active")
@@ -84,7 +100,7 @@ export default class extends Controller {
       }
     } catch (e) {
       this.errorTarget.textContent = "Network error — is Anki synced?"
-      this.fieldPickerTarget.style.display = "none"
+      if (this.hasPickersWrapperTarget) this.pickersWrapperTarget.style.display = "none"
     }
   }
 }

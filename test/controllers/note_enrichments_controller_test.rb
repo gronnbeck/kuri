@@ -79,7 +79,7 @@ class NoteEnrichmentsControllerTest < ActionDispatch::IntegrationTest
   test "save_to_note updates local note record and redirects to note page" do
     post save_to_note_note_enrichments_path, params: {
       anki_note_id: @note.anki_id,
-      field_name:   "Reading",
+      field_name:   "Reading",   # target field
       value:        "たべる"
     }
 
