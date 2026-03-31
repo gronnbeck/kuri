@@ -1,0 +1,100 @@
+# frozen_string_literal: true
+
+class Views::NoteEnrichments::TrySingle < ApplicationView
+  TRANSFORMATION_LABELS = {
+    "reading"   => "Reading — convert to hiragana",
+    "translate" => "Translate — Japanese → English",
+    "furigana"  => "Furigana — annotate kanji with HTML <ruby> tags"
+  }.freeze
+
+  def initialize(transformation:, source_text:, result:, error:)
+    @transformation = transformation
+    @source_text    = source_text
+    @result         = result
+    @error          = error
+  end
+
+  def view_template
+    div(class: "page-header") do
+      render Views::Components::Breadcrumb.new(items: [
+        { label: "Enrich Notes", path: helpers.note_enrichment_batches_path },
+        { label: "Try single" }
+      ])
+      h1 { "Try Enrichment" }
+    end
+
+    div(class: "exercise-content") do
+      div(class: "exercise-section") do
+        form(action: helpers.try_single_note_enrichments_path, method: "post", class: "form") do
+          input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
+
+          div(class: "form-row") do
+            label(class: "form-label") { "Transformation" }
+            select(name: "transformation", class: "form-input") do
+              TRANSFORMATION_LABELS.each do |value, label|
+                if value == @transformation
+                  option(value: value, selected: true) { label }
+                else
+                  option(value: value) { label }
+                end
+              end
+            end
+          end
+
+          div(class: "form-row") do
+            label(class: "form-label") { "Source text" }
+            textarea(name: "source_text", class: "form-input", rows: "4",
+                     placeholder: "Paste Japanese text here…") { @source_text }
+          end
+
+          div(class: "form-actions") do
+            button(type: "submit", class: "button") { "Transform" }
+          end
+        end
+
+        if @error
+          div(class: "enrichment-error-box") do
+            strong { "Error: " }
+            plain @error
+          end
+        end
+
+        if @result
+          div(class: "enrichment-result-box") do
+            div(class: "enrichment-result-header") do
+              h3 { "Result" }
+            end
+
+            div(class: "enrichment-result-compare") do
+              div(class: "enrichment-result-col") do
+                div(class: "enrichment-result-label") { "Source" }
+                div(class: "enrichment-result-value") { @source_text }
+              end
+              div(class: "enrichment-result-arrow") { "→" }
+              div(class: "enrichment-result-col") do
+                div(class: "enrichment-result-label") { "Result" }
+                div(class: "enrichment-result-value") { @result }
+              end
+            end
+
+            div(class: "enrichment-save-section") do
+              h4 { "Save to Anki (optional)" }
+              p(class: "form-hint") { "Enter the note ID and field name to write this result back to Anki." }
+
+              form(action: helpers.save_to_anki_note_enrichments_path, method: "post", class: "form form--inline") do
+                input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
+                input(type: "hidden", name: "value", value: @result)
+
+                input(type: "number", name: "anki_note_id", class: "form-input form-input--small",
+                      placeholder: "Note ID", required: true, style: "width: 12rem")
+                input(type: "text", name: "field_name", class: "form-input form-input--small",
+                      placeholder: "Field name", required: true, style: "width: 12rem")
+                button(type: "submit", class: "button button--small") { "Save to Anki" }
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end

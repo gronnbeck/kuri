@@ -94,6 +94,10 @@ Rails.application.routes.draw do
       end
     end
   end
+  get  "note_enrichments/try", to: "note_enrichments#try_single", as: :try_single_note_enrichments
+  post "note_enrichments/try", to: "note_enrichments#try_single"
+  post "note_enrichments/save_to_anki", to: "note_enrichments#save_to_anki", as: :save_to_anki_note_enrichments
+
   resources :note_enrichment_batches, only: [ :index, :new, :create, :show ] do
     member do
       post :approve_all

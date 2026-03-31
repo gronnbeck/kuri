@@ -1775,3 +1775,84 @@ details.conv-sidebar-section[open] .conv-sidebar-summary {
   gap: 0.4rem;
   flex-shrink: 0;
 }
+
+.enrichment-error-box {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+.enrichment-result-box {
+  margin-top: 1.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.enrichment-result-header {
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.enrichment-result-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.enrichment-result-compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  align-items: start;
+}
+
+.enrichment-result-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  margin-bottom: 0.35rem;
+}
+
+.enrichment-result-value {
+  font-size: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.enrichment-result-arrow {
+  color: #aaa;
+  font-size: 1.25rem;
+  padding-top: 1.5rem;
+}
+
+.enrichment-save-section {
+  padding: 1rem;
+  border-top: 1px solid #e5e5e5;
+  background: #fafafa;
+}
+
+.enrichment-save-section h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.form--inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.form-input--small {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.9rem;
+}

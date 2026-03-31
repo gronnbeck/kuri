@@ -1,7 +1,51 @@
 # frozen_string_literal: true
 
 class NoteEnrichmentsController < ApplicationController
-  before_action :set_batch_and_enrichment
+  before_action :set_batch_and_enrichment, only: [ :approve, :reject ]
+
+  # Single-note enrichment: transform one piece of text and optionally save
+  # the result back to an Anki note field.
+  def try_single
+    @transformation = params[:transformation].presence || "reading"
+    @source_text    = params[:source_text].to_s
+    @result         = nil
+    @error          = nil
+
+    if request.post? && @source_text.present?
+      begin
+        @result = NoteEnricher.call(transformation: @transformation, source_value: @source_text)
+      rescue => e
+        @error = e.message
+      end
+    end
+
+    render Views::NoteEnrichments::TrySingle.new(
+      transformation: @transformation,
+      source_text:    @source_text,
+      result:         @result,
+      error:          @error
+    )
+  end
+
+  # Save the enriched value back to an Anki note field.
+  def save_to_anki
+    note_id    = params[:anki_note_id].to_i
+    field_name = params[:field_name].presence
+    value      = params[:value].presence
+
+    unless note_id > 0 && field_name && value
+      redirect_to try_single_note_enrichments_path, alert: "Missing note ID, field name, or value."
+      return
+    end
+
+    client = AnkiConnect::Client.new
+    client.update_note_fields(note_id, { field_name => value })
+    redirect_to try_single_note_enrichments_path, notice: "Saved to Anki note #{note_id} field '#{field_name}'."
+  rescue AnkiConnect::Client::ConnectionError => e
+    redirect_to try_single_note_enrichments_path, alert: "Anki unavailable: #{e.message}"
+  rescue => e
+    redirect_to try_single_note_enrichments_path, alert: "Failed: #{e.message}"
+  end
 
   def approve
     @enrichment.update!(status: :approved)

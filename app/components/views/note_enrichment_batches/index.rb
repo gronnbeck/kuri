@@ -10,7 +10,8 @@ class Views::NoteEnrichmentBatches::Index < ApplicationView
       div do
         h1 { "Enrich Anki Notes" }
       end
-      link_to "New enrichment", helpers.new_note_enrichment_batch_path, class: "button"
+      link_to "Try single", helpers.try_single_note_enrichments_path, class: "button button--ghost"
+      link_to "New batch enrichment", helpers.new_note_enrichment_batch_path, class: "button"
     end
 
     if @batches.any?
