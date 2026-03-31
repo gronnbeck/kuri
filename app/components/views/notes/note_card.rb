@@ -11,8 +11,8 @@ class Views::Notes::NoteCard < ApplicationView
     definition = @note.fields.dig("Definition", "value")
 
     a(href: helpers.note_path(@note.anki_id), class: "note-card") do
-      div(class: "note-field") { strong { word || sentence } }
-      div(class: "note-field") { plain definition }
+      div(class: "note-card-word") { word || sentence }
+      div(class: "note-card-definition") { plain definition }
     end
   end
 end

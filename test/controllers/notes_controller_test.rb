@@ -19,7 +19,7 @@ class NotesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".note-card", 1
     assert_select ".note-card[href='/notes/42']"
-    assert_select ".note-field", /Hello/
+    assert_select ".note-card-word", /Hello/
   end
 
   test "index renders empty list when there are no notes" do

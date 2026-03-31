@@ -215,8 +215,15 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.note-card .note-field {
-  margin-bottom: 0.5rem;
+.note-card-word {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.4rem;
+}
+
+.note-card-definition {
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .note-card .note-tags {
