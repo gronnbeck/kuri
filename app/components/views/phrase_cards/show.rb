@@ -86,6 +86,8 @@ class Views::PhraseCards::Show < ApplicationView
             button_to(@card.added? ? "Re-add to Anki" : "Add to Anki",
               helpers.add_to_anki_phrase_card_path(@card),
               method: :post, class: "button button--secondary")
+          else
+            a(href: helpers.settings_listen_phrases_path, class: "button button--secondary") { "Configure Anki" }
           end
           button_to "Delete", helpers.phrase_card_path(@card),
             method: :delete,
