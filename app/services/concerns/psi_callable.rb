@@ -8,10 +8,12 @@ module PsiCallable
   private
 
   def psi_env
+    oauth_token = ENV["CLAUDE_CODE_OAUTH_TOKEN"].presence
     {
-      "PSI_ANTHROPIC_API_KEY"  => ENV["PSI_ANTHROPIC_API_KEY"],
-      "CLAUDE_CODE_OAUTH_TOKEN" => ENV["CLAUDE_CODE_OAUTH_TOKEN"],
-      "PSI_MODEL"              => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
-    }.compact
+      "PSI_MODEL"               => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001"),
+      "CLAUDE_CODE_OAUTH_TOKEN" => oauth_token,
+      # Explicitly nil when using OAuth so it doesn't bleed through from the parent env
+      "PSI_ANTHROPIC_API_KEY"   => oauth_token ? nil : ENV["PSI_ANTHROPIC_API_KEY"]
+    }
   end
 end
