@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class UsefulPhraseChecker
-  PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
+  include PsiCallable
 
   Result = Struct.new(:correct, :feedback, keyword_init: true)
 
@@ -80,7 +80,7 @@ class UsefulPhraseChecker
 
   def run_psi(prompt)
     Bundler.with_unbundled_env do
-      stdout, stderr, _status = Open3.capture3(build_env, PSI_BIN, "--pp", stdin_data: prompt)
+      stdout, stderr, _status = Open3.capture3(psi_env, PSI_BIN, "--pp", stdin_data: prompt)
       [ stdout, stderr ]
     end
   rescue Errno::ENOENT
@@ -88,11 +88,4 @@ class UsefulPhraseChecker
   end
 
   private
-
-  def build_env
-    {
-      "PSI_ANTHROPIC_API_KEY" => ENV["PSI_ANTHROPIC_API_KEY"],
-      "PSI_MODEL"             => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
-    }.compact
-  end
 end

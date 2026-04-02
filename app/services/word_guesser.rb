@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class WordGuesser
-  PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
+  include PsiCallable
 
   PROMPT = <<~PROMPT
     You are playing a Japanese vocabulary guessing game.
@@ -22,7 +22,7 @@ class WordGuesser
 
   def call
     prompt = format(PROMPT, @description)
-    env = build_env
+    env = psi_env
 
     stdout, stderr, _status = Bundler.with_unbundled_env do
       Open3.capture3(env, PSI_BIN, "--pp", stdin_data: prompt)
@@ -43,11 +43,4 @@ class WordGuesser
   end
 
   private
-
-  def build_env
-    {
-      "PSI_ANTHROPIC_API_KEY" => ENV["PSI_ANTHROPIC_API_KEY"],
-      "PSI_MODEL"             => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
-    }.compact
-  end
 end

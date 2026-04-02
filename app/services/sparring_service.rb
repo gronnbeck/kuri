@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class SparringService
-  PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
+  include PsiCallable
 
   SYSTEM_PROMPT = <<~PROMPT
     You are a Japanese learning assistant for the Kuri app.
@@ -54,19 +54,12 @@ class SparringService
   def run_psi(ndjson)
     Bundler.with_unbundled_env do
       stdout, stderr, _status = Open3.capture3(
-        build_env, PSI_BIN, "--pp", "--input-type", "ndjson",
+        psi_env, PSI_BIN, "--pp", "--input-type", "ndjson",
         stdin_data: ndjson
       )
       [ stdout, stderr ]
     end
   rescue Errno::ENOENT
     raise "psi not found at #{PSI_BIN}. Set PSI_BIN env var."
-  end
-
-  def build_env
-    {
-      "PSI_ANTHROPIC_API_KEY" => ENV["PSI_ANTHROPIC_API_KEY"],
-      "PSI_MODEL"             => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
-    }.compact
   end
 end

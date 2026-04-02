@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PhraseCardGenerator
-  PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
+  include PsiCallable
 
   PROMPT = <<~PROMPT
     Generate a Japanese phrase card for a learner at JLPT %s level.
@@ -66,19 +66,13 @@ class PhraseCardGenerator
 
   def run_psi(prompt)
     Bundler.with_unbundled_env do
-      stdout, stderr, _status = Open3.capture3(build_env, PSI_BIN, "--pp", stdin_data: prompt)
+      stdout, stderr, _status = Open3.capture3(psi_env, PSI_BIN, "--pp", stdin_data: prompt)
       [ stdout, stderr ]
     end
   rescue Errno::ENOENT
     raise "psi not found at #{PSI_BIN}. Set PSI_BIN env var."
   end
 
-  def build_env
-    {
-      "PSI_ANTHROPIC_API_KEY" => ENV["PSI_ANTHROPIC_API_KEY"],
-      "PSI_MODEL"             => ENV.fetch("PSI_MODEL", "claude-haiku-4-5-20251001")
-    }.compact
-  end
 
   def extract_json(content)
     json = content.to_s.strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, "").strip
