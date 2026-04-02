@@ -5,8 +5,17 @@ class PhraseCardsController < ApplicationController
 
   def index
     scope = params[:archived] == "1" ? PhraseCard.where(archived: true) : PhraseCard.where(archived: false)
-    @cards = scope.order(created_at: :desc)
-    render Views::PhraseCards::Index.new(cards: @cards, show_archived: params[:archived] == "1")
+    scope = scope.where(difficulty_level: params[:difficulty]) if params[:difficulty].present?
+    direction = params[:sort] == "asc" ? :asc : :desc
+    scope = scope.order(created_at: direction)
+    @pagy, @cards = pagy(scope, items: 50)
+    render Views::PhraseCards::Index.new(
+      cards: @cards,
+      pagy: @pagy,
+      show_archived: params[:archived] == "1",
+      difficulty: params[:difficulty],
+      sort: direction.to_s
+    )
   end
 
   def new

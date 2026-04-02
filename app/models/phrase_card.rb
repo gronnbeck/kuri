@@ -10,4 +10,5 @@ class PhraseCard < ApplicationRecord
 
   validates :english, :japanese, :hiragana, :difficulty_level, presence: true
   validates :difficulty_level, inclusion: { in: DIFFICULTIES }
+  validates :japanese, uniqueness: true
 end

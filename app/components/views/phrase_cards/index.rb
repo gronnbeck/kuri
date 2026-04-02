@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
 class Views::PhraseCards::Index < ApplicationView
-  def initialize(cards:, show_archived:)
+  DIFFICULTIES = %w[n5 n4 n3 n2 n1].freeze
+
+  def initialize(cards:, pagy:, show_archived:, difficulty:, sort:)
     @cards         = cards
+    @pagy          = pagy
     @show_archived = show_archived
+    @difficulty    = difficulty
+    @sort          = sort
   end
 
   def view_template
@@ -15,6 +20,24 @@ class Views::PhraseCards::Index < ApplicationView
           @show_archived ? "Show active" : "Show archived"
         end
         a(href: helpers.new_phrase_card_path, class: "button") { "New card" }
+      end
+    end
+
+    div(class: "filter-bar") do
+      # Difficulty filter
+      div(class: "filter-bar-group") do
+        a(href: filter_path(difficulty: nil), class: filter_class(@difficulty.nil?)) { "All" }
+        DIFFICULTIES.each do |d|
+          a(href: filter_path(difficulty: d), class: filter_class(@difficulty == d)) { d.upcase }
+        end
+      end
+
+      # Sort toggle
+      div(class: "filter-bar-group") do
+        next_sort = @sort == "desc" ? "asc" : "desc"
+        a(href: filter_path(sort: next_sort), class: "button button--secondary button--small") do
+          @sort == "desc" ? "Newest first ↓" : "Oldest first ↑"
+        end
       end
     end
 
@@ -37,6 +60,34 @@ class Views::PhraseCards::Index < ApplicationView
           end
         end
       end
+
+      if @pagy.pages > 1
+        div(class: "pagination") do
+          if @pagy.prev
+            a(href: filter_path(page: @pagy.prev), class: "button button--secondary button--small") { "← Previous" }
+          end
+          span(class: "pagination-info") { "Page #{@pagy.page} of #{@pagy.pages}" }
+          if @pagy.next
+            a(href: filter_path(page: @pagy.next), class: "button button--secondary button--small") { "Next →" }
+          end
+        end
+      end
     end
+  end
+
+  private
+
+  def filter_path(**overrides)
+    helpers.phrase_cards_path(
+      difficulty: @difficulty,
+      sort: @sort,
+      archived: @show_archived ? "1" : nil,
+      **overrides,
+      page: nil
+    )
+  end
+
+  def filter_class(active)
+    active ? "button button--small button--primary" : "button button--small button--secondary"
   end
 end

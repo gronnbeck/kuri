@@ -70,3 +70,5 @@ group :test do
   # HTTP request stubbing for service object tests
   gem "webmock"
 end
+
+gem "pagy", "~> 6.5"

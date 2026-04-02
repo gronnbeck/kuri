@@ -77,6 +77,21 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-bar-group {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .button {
   display: inline-block;
   padding: 0.4rem 1rem;
