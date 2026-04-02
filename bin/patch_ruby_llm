@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# Patches the installed ruby_llm gem to support CLAUDE_CODE_OAUTH_TOKEN.
+# Sends Authorization: Bearer instead of x-api-key when the env var is set.
+#
+# Run this after `gem update ruby_llm` or `gem install ruby_llm`.
+#
+# Usage: bin/patch_ruby_llm
+
+gem_dir = `gem contents ruby_llm 2>/dev/null`.lines.map { |l| File.dirname(l.strip) }.uniq.find { |d| d.include?("ruby_llm") }
+abort "ruby_llm gem not found. Install it first." unless gem_dir
+
+anthropic_rb = Dir[File.join(gem_dir, "**/providers/anthropic.rb")].first
+abort "Could not find ruby_llm/providers/anthropic.rb" unless anthropic_rb
+
+content = File.read(anthropic_rb)
+
+ALREADY_PATCHED = "CLAUDE_CODE_OAUTH_TOKEN"
+ORIGINAL = <<~RUBY
+      def headers
+        {
+          'x-api-key' => @config.anthropic_api_key,
+          'anthropic-version' => '2023-06-01'
+        }
+      end
+RUBY
+
+PATCHED = <<~RUBY
+      def headers
+        oauth_token = ENV['CLAUDE_CODE_OAUTH_TOKEN']
+        if oauth_token && !oauth_token.empty?
+          {
+            'Authorization' => "Bearer \#{oauth_token}",
+            'anthropic-version' => '2023-06-01'
+          }
+        else
+          {
+            'x-api-key' => @config.anthropic_api_key,
+            'anthropic-version' => '2023-06-01'
+          }
+        end
+      end
+RUBY
+
+if content.include?(ALREADY_PATCHED)
+  puts "Already patched: #{anthropic_rb}"
+  exit 0
+end
+
+abort "Unexpected content in #{anthropic_rb} — patch may need updating for this version of ruby_llm." unless content.include?(ORIGINAL)
+
+File.write(anthropic_rb, content.sub(ORIGINAL, PATCHED))
+puts "Patched: #{anthropic_rb}"
