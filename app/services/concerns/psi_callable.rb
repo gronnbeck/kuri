@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 # Shared helpers for services that shell out to psi.
-# Handles both API key auth and Claude Code OAuth token auth.
 module PsiCallable
   PSI_BIN = ENV.fetch("PSI_BIN", "#{Dir.home}/.local/bin/psi")
+
+  # Flags for pure generation calls — bypasses .psi/settings.yml so psi
+  # doesn't load Kuri's custom tools and try to use them instead of returning JSON.
+  PSI_NO_TOOLS_FLAGS = [ "--config", "/dev/null" ].freeze
 
   private
 

@@ -74,7 +74,7 @@ class ConversationPartner
 
   def run_psi(prompt)
     Bundler.with_unbundled_env do
-      stdout, stderr, _status = Open3.capture3(psi_env, PSI_BIN, "--pp", stdin_data: prompt)
+      stdout, stderr, _status = Open3.capture3(psi_env, PSI_BIN, "--pp", *PSI_NO_TOOLS_FLAGS, stdin_data: prompt)
       [ stdout, stderr ]
     end
   rescue Errno::ENOENT

@@ -25,7 +25,7 @@ class WordGuesser
     env = psi_env
 
     stdout, stderr, _status = Bundler.with_unbundled_env do
-      Open3.capture3(env, PSI_BIN, "--pp", stdin_data: prompt)
+      Open3.capture3(env, PSI_BIN, "--pp", *PSI_NO_TOOLS_FLAGS, stdin_data: prompt)
     end
 
     lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
