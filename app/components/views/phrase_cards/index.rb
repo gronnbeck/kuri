@@ -77,13 +77,13 @@ class Views::PhraseCards::Index < ApplicationView
 
   private
 
-  def filter_path(**overrides)
+  def filter_path(page: nil, **overrides)
     helpers.phrase_cards_path(
       difficulty: @difficulty,
       sort: @sort,
       archived: @show_archived ? "1" : nil,
       **overrides,
-      page: nil
+      page: page
     )
   end
 

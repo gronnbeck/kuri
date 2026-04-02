@@ -5,8 +5,17 @@ class ConversationExercisesController < ApplicationController
 
   def index
     scope = params[:archived] == "1" ? ConversationExercise.where(archived: true) : ConversationExercise.where(archived: false)
-    @exercises = scope.includes(:context).order(created_at: :desc)
-    render Views::ConversationExercises::Index.new(exercises: @exercises, show_archived: params[:archived] == "1")
+    scope = scope.where(difficulty_level: params[:difficulty]) if params[:difficulty].present?
+    direction = params[:sort] == "asc" ? :asc : :desc
+    scope = scope.includes(:context).order(created_at: direction)
+    @pagy, @exercises = pagy(scope, items: 50)
+    render Views::ConversationExercises::Index.new(
+      exercises: @exercises,
+      pagy: @pagy,
+      show_archived: params[:archived] == "1",
+      difficulty: params[:difficulty],
+      sort: direction.to_s
+    )
   end
 
   def new

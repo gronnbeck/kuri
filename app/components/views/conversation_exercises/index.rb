@@ -5,9 +5,14 @@ class Views::ConversationExercises::Index < ApplicationView
   ANKI_LABELS = { "not_added" => "Not added", "added" => "Added", "failed" => "Failed" }.freeze
   ANKI_CLASSES = { "not_added" => "badge--neutral", "added" => "badge--success", "failed" => "badge--error" }.freeze
 
-  def initialize(exercises:, show_archived: false)
+  DIFFICULTIES = %w[n5 n4 n3 n2 n1].freeze
+
+  def initialize(exercises:, pagy:, show_archived: false, difficulty: nil, sort: "desc")
     @exercises     = exercises
+    @pagy          = pagy
     @show_archived = show_archived
+    @difficulty    = difficulty
+    @sort          = sort
   end
 
   def view_template
@@ -23,6 +28,21 @@ class Views::ConversationExercises::Index < ApplicationView
         else
           link_to "Archived", helpers.conversation_exercises_path(archived: 1), class: "button button--ghost"
           link_to "New Exercise", helpers.new_conversation_exercise_path, class: "button"
+        end
+      end
+    end
+
+    div(class: "filter-bar") do
+      div(class: "filter-bar-group") do
+        a(href: filter_path(difficulty: nil), class: filter_class(@difficulty.nil?)) { "All" }
+        DIFFICULTIES.each do |d|
+          a(href: filter_path(difficulty: d), class: filter_class(@difficulty == d)) { d.upcase }
+        end
+      end
+      div(class: "filter-bar-group") do
+        next_sort = @sort == "desc" ? "asc" : "desc"
+        a(href: filter_path(sort: next_sort), class: "button button--secondary button--small") do
+          @sort == "desc" ? "Newest first ↓" : "Oldest first ↑"
         end
       end
     end
@@ -66,6 +86,34 @@ class Views::ConversationExercises::Index < ApplicationView
           end
         end
       end
+
+      if @pagy.pages > 1
+        div(class: "pagination") do
+          if @pagy.prev
+            a(href: filter_path(page: @pagy.prev), class: "button button--secondary button--small") { "← Previous" }
+          end
+          span(class: "pagination-info") { "Page #{@pagy.page} of #{@pagy.pages}" }
+          if @pagy.next
+            a(href: filter_path(page: @pagy.next), class: "button button--secondary button--small") { "Next →" }
+          end
+        end
+      end
     end
+  end
+
+  private
+
+  def filter_path(page: nil, **overrides)
+    helpers.conversation_exercises_path(
+      difficulty: @difficulty,
+      sort: @sort,
+      archived: @show_archived ? "1" : nil,
+      **overrides,
+      page: page
+    )
+  end
+
+  def filter_class(active)
+    active ? "button button--small button--primary" : "button button--small button--secondary"
   end
 end
