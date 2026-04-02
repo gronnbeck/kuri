@@ -6,7 +6,7 @@ class ConversationExercisesController < ApplicationController
   def index
     scope = params[:archived] == "1" ? ConversationExercise.where(archived: true) : ConversationExercise.where(archived: false)
     scope = scope.where(difficulty_level: params[:difficulty]) if params[:difficulty].present?
-    direction = params[:sort] == "asc" ? :asc : :desc
+    direction = params[:sort] == "desc" ? :desc : :asc
     scope = scope.includes(:context).order(created_at: direction)
     @pagy, @exercises = pagy(scope, items: 50)
     render Views::ConversationExercises::Index.new(

@@ -6,7 +6,7 @@ class PhraseCardsController < ApplicationController
   def index
     scope = params[:archived] == "1" ? PhraseCard.where(archived: true) : PhraseCard.where(archived: false)
     scope = scope.where(difficulty_level: params[:difficulty]) if params[:difficulty].present?
-    direction = params[:sort] == "asc" ? :asc : :desc
+    direction = params[:sort] == "desc" ? :desc : :asc
     scope = scope.order(created_at: direction)
     @pagy, @cards = pagy(scope, items: 50)
     render Views::PhraseCards::Index.new(

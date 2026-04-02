@@ -3,7 +3,7 @@
 class Views::PhraseCards::Index < ApplicationView
   DIFFICULTIES = %w[n5 n4 n3 n2 n1].freeze
 
-  def initialize(cards:, pagy:, show_archived:, difficulty:, sort:)
+  def initialize(cards:, pagy:, show_archived:, difficulty:, sort: "asc")
     @cards         = cards
     @pagy          = pagy
     @show_archived = show_archived

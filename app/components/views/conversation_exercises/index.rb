@@ -7,7 +7,7 @@ class Views::ConversationExercises::Index < ApplicationView
 
   DIFFICULTIES = %w[n5 n4 n3 n2 n1].freeze
 
-  def initialize(exercises:, pagy:, show_archived: false, difficulty: nil, sort: "desc")
+  def initialize(exercises:, pagy:, show_archived: false, difficulty: nil, sort: "asc")
     @exercises     = exercises
     @pagy          = pagy
     @show_archived = show_archived
