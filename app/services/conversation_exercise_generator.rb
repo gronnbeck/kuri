@@ -28,7 +28,9 @@ class ConversationExerciseGenerator
 
     ## Output
 
-    Respond with JSON only — no markdown, no explanation.
+    Your entire response must be a single JSON object with no text before or after it.
+    No markdown, no code fences, no explanation — just the raw JSON.
+
     {
       "context_name": "<short English label for this context, e.g. 'restaurant', 'pharmacy', 'train station'>",
       "request_jp": "<what is said TO the learner — in Japanese, short and natural>",
@@ -72,7 +74,9 @@ class ConversationExerciseGenerator
 
     ## Output
 
-    Respond with JSON only — no markdown, no explanation.
+    Your entire response must be a single JSON object with no text before or after it.
+    No markdown, no code fences, no explanation — just the raw JSON.
+
     {
       "request_jp": "<revised request in Japanese>",
       "request_en": "<natural English translation>",
@@ -90,7 +94,9 @@ class ConversationExerciseGenerator
     Request:  %s
     Response: %s
 
-    Respond with JSON only — no markdown, no explanation.
+    Your entire response must be a single JSON object with no text before or after it.
+    No markdown, no code fences, no explanation — just the raw JSON.
+
     {
       "request_reading":  "<hiragana-only reading of the request>",
       "response_reading": "<hiragana-only reading of the response>"
@@ -118,22 +124,26 @@ class ConversationExerciseGenerator
   end
 
   def call
-    stdout, stderr = run_psi(build_prompt)
-    parse_result(stdout, stderr)
+    with_json_retry(build_prompt) do |prompt|
+      stdout, stderr = run_psi(prompt)
+      parse_result(stdout, stderr)
+    end
   end
 
   def fetch_readings(exercise)
     prompt = format(READINGS_PROMPT, exercise.request_jp, exercise.response_jp)
-    stdout, stderr = run_psi(prompt)
-    lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
-    raise "psi error: #{lines.find { |l| l["type"] == "error" }&.dig("message")}" if lines.any? { |l| l["type"] == "error" }
-    response = lines.find { |l| l["type"] == "response" }
-    raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
-    data = extract_json(response["content"])
-    {
-      request_reading:  data["request_reading"].to_s.strip.presence,
-      response_reading: data["response_reading"].to_s.strip.presence
-    }
+    with_json_retry(prompt) do |p|
+      stdout, stderr = run_psi(p)
+      lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
+      raise "psi error: #{lines.find { |l| l["type"] == "error" }&.dig("message")}" if lines.any? { |l| l["type"] == "error" }
+      response = lines.find { |l| l["type"] == "response" }
+      raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
+      data = extract_json(response["content"])
+      {
+        request_reading:  data["request_reading"].to_s.strip.presence,
+        response_reading: data["response_reading"].to_s.strip.presence
+      }
+    end
   end
 
   def improve(exercise, feedbacks)
@@ -146,8 +156,10 @@ class ConversationExerciseGenerator
       exercise.context&.name || "general",
       feedback_text
     )
-    stdout, stderr = run_psi(full_prompt)
-    parse_result(stdout, stderr)
+    with_json_retry(full_prompt) do |prompt|
+      stdout, stderr = run_psi(prompt)
+      parse_result(stdout, stderr)
+    end
   end
 
   private
@@ -190,7 +202,6 @@ class ConversationExerciseGenerator
   rescue Errno::ENOENT
     raise "psi not found at #{PSI_BIN}. Set PSI_BIN env var."
   end
-
 
   def extract_json(content)
     json = content.to_s.strip

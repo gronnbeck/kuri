@@ -10,7 +10,9 @@ class PhraseCardGenerator
 
     ## Output
 
-    Respond with JSON only — no markdown, no explanation.
+    Your entire response must be a single JSON object with no text before or after it.
+    No markdown, no code fences, no explanation — just the raw JSON.
+
     {
       "english":   "<a short, natural English phrase — use the one provided or write one that fits the prompt>",
       "japanese":  "<natural Japanese using kanji appropriate for the JLPT level>",
@@ -34,25 +36,26 @@ class PhraseCardGenerator
   end
 
   def call
-    prompt = format(PROMPT, @difficulty.upcase, build_request)
-    stdout, stderr = run_psi(prompt)
+    with_json_retry(format(PROMPT, @difficulty.upcase, build_request)) do |prompt|
+      stdout, stderr = run_psi(prompt)
 
-    lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
+      lines = stdout.lines.map { |l| JSON.parse(l.strip) rescue nil }.compact
 
-    if (err = lines.find { |l| l["type"] == "error" })
-      raise "psi error: #{err["message"]}"
+      if (err = lines.find { |l| l["type"] == "error" })
+        raise "psi error: #{err["message"]}"
+      end
+
+      response = lines.find { |l| l["type"] == "response" }
+      raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
+
+      data = extract_json(response["content"])
+      Result.new(
+        english:  data["english"].to_s.strip.presence || @english,
+        japanese: data["japanese"].to_s.strip,
+        hiragana: data["hiragana"].to_s.strip,
+        notes:    data["notes"].presence
+      )
     end
-
-    response = lines.find { |l| l["type"] == "response" }
-    raise "psi failed: #{stderr.lines.first&.strip || "no response"}" unless response
-
-    data = extract_json(response["content"])
-    Result.new(
-      english:  data["english"].to_s.strip.presence || @english,
-      japanese: data["japanese"].to_s.strip,
-      hiragana: data["hiragana"].to_s.strip,
-      notes:    data["notes"].presence
-    )
   end
 
   private
@@ -72,7 +75,6 @@ class PhraseCardGenerator
   rescue Errno::ENOENT
     raise "psi not found at #{PSI_BIN}. Set PSI_BIN env var."
   end
-
 
   def extract_json(content)
     json = content.to_s.strip.gsub(/\A```(?:json)?\n?/, "").gsub(/\n?```\z/, "").strip
