@@ -71,4 +71,4 @@ group :test do
   gem "webmock"
 end
 
-gem "pagy", "~> 6.5"
+gem "pagy", "~> 43.4"
